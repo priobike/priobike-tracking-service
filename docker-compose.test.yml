@@ -1,0 +1,14 @@
+# Containers that are needed to execute tests
+services:
+  backend:
+    container_name: backend
+    build: .
+    env_file:
+      - test.env
+    tty: true
+    restart: unless-stopped
+
+volumes:
+  pg_data:
+  pg_conf:
+  pg_log:
