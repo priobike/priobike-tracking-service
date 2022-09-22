@@ -98,16 +98,22 @@ class ListTracksResource(View):
         tracks = paginator.get_page(page)
 
         # Serialize the tracks.
-        return JsonResponse(
-            [
+        return JsonResponse({
+            "results": [
                 {
-                    "data": track.raw,
                     "pk": track.pk,
+                    "startTime": track.start_time,
+                    "endTime": track.end_time,
+                    "debug": track.debug,
+                    "backend": track.backend,
+                    "positioningMode": track.positioning_mode,
                 } 
                 for track in tracks
             ], 
-            safe=False
-        )
+            "page": page,
+            "pageSize": page_size,
+            "totalPages": tracks.paginator.num_pages,
+        })
 
 
 @method_decorator(csrf_exempt, name='dispatch')

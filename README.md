@@ -41,7 +41,22 @@ Response:
 
 ```
 [
-    { "pk": <Primary key>, "data": <Raw track data> },
+    { 
+        "results": [
+            {
+                "pk": track.pk,
+                "startTime": track.start_time,
+                "endTime": track.end_time,
+                "debug": track.debug,
+                "backend": track.backend,
+                "positioningMode": track.positioning_mode,
+            } 
+            for track in tracks
+        ], 
+        "page": page,
+        "pageSize": page_size,
+        "totalPages": tracks.paginator.num_pages,
+    },
     ...
 ]
 ```
