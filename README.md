@@ -4,14 +4,14 @@ A microservice to receive tracks from users.
 
 ## REST Endpoint
 
-### *POST* `/tracks/get/` - Get a single track with an API key.
+### *GET* `/tracks/get/` - Get a single track with an API key.
 
 #### Response format
 
 Perform an example request with the example preset route:
 
 ```
-curl "http://localhost:8000/tracks/get/?key=secret&pk=1"
+curl -X GET --data "@example-key.json" "http://localhost:8000/tracks/get/?pk=1"
 ```
 
 Response:
@@ -27,14 +27,14 @@ Parameters:
 * `key` - The API key to use.
 * `pk` - The primary key of the track to get.
 
-### *POST* `/tracks/list/` - Get tracks with an API key.
+### *GET* `/tracks/list/` - Get tracks with an API key.
 
 #### Response format
 
 Perform an example request with the example preset route:
 
 ```
-curl "http://localhost:8000/tracks/list/?key=secret"
+curl -X GET --data "@example-key.json" "http://localhost:8000/tracks/list/"
 ```
 
 Response:

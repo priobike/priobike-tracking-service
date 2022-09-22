@@ -64,8 +64,12 @@ class PostTrackResource(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class ListTracksResource(View):
     def get(self, request):
-        # Get the API key from the request.
-        api_key = request.GET.get("key", None)
+        # Get the API key from the request body.
+        try:
+            json_data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return HttpResponseBadRequest(json.dumps({"error": "Invalid request."}))
+        api_key = json_data.get("key", None)
         if not api_key:
             return HttpResponseBadRequest(json.dumps({"error": "Missing key."}))
         if api_key != settings.API_KEY:
@@ -119,8 +123,12 @@ class ListTracksResource(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class GetTrackResource(View):
     def get(self, request):
-        # Get the API key from the request.
-        api_key = request.GET.get("key", None)
+        # Get the API key from the request body.
+        try:
+            json_data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return HttpResponseBadRequest(json.dumps({"error": "Invalid request."}))
+        api_key = json_data.get("key", None)
         if not api_key:
             return HttpResponseBadRequest(json.dumps({"error": "Missing key."}))
         if api_key != settings.API_KEY:
