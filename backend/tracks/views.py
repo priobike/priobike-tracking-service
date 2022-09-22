@@ -63,7 +63,7 @@ class PostTrackResource(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ListTracksResource(View):
-    def get(self, request):
+    def post(self, request):
         # Get the API key from the request body.
         try:
             json_data = json.loads(request.body)
@@ -121,8 +121,8 @@ class ListTracksResource(View):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class GetTrackResource(View):
-    def get(self, request):
+class FetchTrackResource(View):
+    def post(self, request):
         # Get the API key from the request body.
         try:
             json_data = json.loads(request.body)
