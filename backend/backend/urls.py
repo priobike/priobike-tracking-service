@@ -18,5 +18,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
+    path('tracks/', include('tracks.urls')),
+
     path(settings.ADMIN_URL, admin.site.urls),
 ]

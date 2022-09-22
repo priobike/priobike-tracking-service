@@ -6,16 +6,12 @@ A microservice to receive tracks from users.
 
 ### *POST* `/tracks/post/` - Post a new track.
 
-#### Request format
-
-`TODO`
-
 #### Response format
 
 Perform an example request with the example preset route:
 
 ```
-curl --data "@example.json" http://localhost:8000/tracks/post/
+curl --data "@example-track.json" http://localhost:8000/tracks/post/
 ```
 
 Response:

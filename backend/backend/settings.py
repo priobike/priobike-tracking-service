@@ -43,9 +43,14 @@ if DEBUG:
 else:
     SECRET_KEY = os.environ.get('DJANGO_KEY')
 
+# SECURITY WARNING: keep the API key used in production secret!
+API_KEY = os.environ.get('API_KEY', '')
+
 # Application definition
 
 INSTALLED_APPS = [
+    'tracks',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
