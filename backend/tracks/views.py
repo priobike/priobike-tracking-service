@@ -44,6 +44,20 @@ class PostTrackResource(View):
         positioning_mode = settings.get("positioningMode", None)
         if not positioning_mode:
             return HttpResponseBadRequest(json.dumps({"error": "Missing positioningMode."}))
+
+        device_info = json_data.get("deviceInfo", None)
+        if not device_info:
+            return HttpResponseBadRequest(json.dumps({"error": "Missing deviceInfo."}))
+
+        device_type = device_info.get("name", None)
+        if not device_type:
+            return HttpResponseBadRequest(json.dumps({"error": "Missing deviceInfo.name."}))
+
+        device_id = device_info.get("androidId", None) # Android
+        if not device_id:
+            device_id = device_info.get("identifierForVendor", None) # iOS
+        if not device_id:
+            return HttpResponseBadRequest(json.dumps({"error": "Missing deviceInfo.androidId or deviceInfo.identifierForVendor."}))
         
         # Make some sanity checks on the requested data.
         try:
@@ -54,6 +68,8 @@ class PostTrackResource(View):
                 debug=debug,
                 backend=backend,
                 positioning_mode=positioning_mode,
+                device_id=device_id,
+                device_type=device_type,
             )
         except (ValidationError, KeyError):
             return HttpResponseBadRequest(json.dumps({"error": "Invalid request."}))

@@ -29,6 +29,12 @@ class Track(models.Model):
     # The positioning mode that was used to create the track.
     positioning_mode = models.CharField(max_length=255, default='unknown')
 
+    # The device id.
+    device_id = models.CharField(max_length=255, default='unknown')
+
+    # The device model.
+    device_type = models.CharField(max_length=255, default='unknown')
+
     # The date the track was received.
     date = models.DateTimeField(auto_now_add=True)
 
@@ -37,6 +43,7 @@ class Track(models.Model):
         if self.debug:
             output += "[DEBUG] "
         output += f"Positioning: {self.positioning_mode}, Backend: {self.backend}, Date: {self.date}"
+        output += f", Device: {self.device_type} ({self.device_id})"
         return output
 
     class Meta:
@@ -44,5 +51,5 @@ class Track(models.Model):
 
 
 class TracksAdmin(admin.ModelAdmin):
-    fields = ('raw', 'start_time', 'end_time', 'debug', 'backend', 'positioning_mode', 'date')
-    readonly_fields = ('raw', 'start_time', 'end_time', 'debug', 'backend', 'positioning_mode', 'date')
+    fields = ('raw', 'start_time', 'end_time', 'debug', 'backend', 'positioning_mode', 'date', 'device_id', 'device_type')
+    readonly_fields = ('raw', 'start_time', 'end_time', 'debug', 'backend', 'positioning_mode', 'date', 'device_id', 'device_type')
