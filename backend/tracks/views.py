@@ -1,6 +1,8 @@
 import json
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -57,3 +59,75 @@ class PostTrackResource(View):
             return HttpResponseBadRequest(json.dumps({"error": "Invalid request."}))
         
         return JsonResponse({"success": True})
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ListTracksResource(View):
+    def get(self, request):
+        # Get the API key from the request.
+        api_key = request.GET.get("key", None)
+        if not api_key:
+            return HttpResponseBadRequest(json.dumps({"error": "Missing key."}))
+        if api_key != settings.API_KEY:
+            return HttpResponseBadRequest(json.dumps({"error": "Invalid key."}))
+
+        tracks = Track.objects.all()
+        
+        # Filter the tracks by the requested parameters.
+        if "from" in request.GET:
+            tracks = tracks.filter(start_time__gte=request.GET["from"])
+        if "to" in request.GET:
+            tracks = tracks.filter(end_time__lte=request.GET["to"])
+        if "debug" in request.GET:
+            tracks = tracks.filter(debug=request.GET["debug"])
+        if "backend" in request.GET:
+            tracks = tracks.filter(backend=request.GET["backend"])
+        if "positioning" in request.GET:
+            tracks = tracks.filter(positioning_mode=request.GET["positioning"])
+        
+        # Paginate the tracks.
+        page = int(request.GET.get("page", 1))
+        if page < 1:
+            page = 1
+
+        page_size = int(request.GET.get("pageSize", 10))
+        if page_size > 100:
+            page_size = 100
+
+        paginator = Paginator(tracks, page_size)
+        tracks = paginator.get_page(page)
+
+        # Serialize the tracks.
+        return JsonResponse(
+            [
+                {
+                    "data": track.raw,
+                    "pk": track.pk,
+                } 
+                for track in tracks
+            ], 
+            safe=False
+        )
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class GetTrackResource(View):
+    def get(self, request):
+        # Get the API key from the request.
+        api_key = request.GET.get("key", None)
+        if not api_key:
+            return HttpResponseBadRequest(json.dumps({"error": "Missing key."}))
+        if api_key != settings.API_KEY:
+            return HttpResponseBadRequest(json.dumps({"error": "Invalid key."}))
+
+        if "pk" not in request.GET:
+            return HttpResponseBadRequest(json.dumps({"error": "Missing pk."}))
+        try:
+            track = Track.objects.get(pk=request.GET["pk"])
+        except Track.DoesNotExist:
+            return HttpResponseBadRequest(json.dumps({"error": "Invalid pk."}))
+
+        return JsonResponse({
+            "data": track.raw,
+            "pk": track.pk,
+        })

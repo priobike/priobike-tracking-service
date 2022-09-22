@@ -44,7 +44,7 @@ else:
     SECRET_KEY = os.environ.get('DJANGO_KEY')
 
 # SECURITY WARNING: keep the API key used in production secret!
-API_KEY = os.environ.get('API_KEY', '')
+API_KEY = os.environ.get('API_KEY', 'secret')
 
 # Application definition
 
