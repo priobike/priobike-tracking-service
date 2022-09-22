@@ -79,13 +79,9 @@ class PostTrackResource(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ListTracksResource(View):
-    def post(self, request):
+    def get(self, request):
         # Get the API key from the request body.
-        try:
-            json_data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return HttpResponseBadRequest(json.dumps({"error": "Invalid request."}))
-        api_key = json_data.get("key", None)
+        api_key = request.GET.get("key", None)
         if not api_key:
             return HttpResponseBadRequest(json.dumps({"error": "Missing key."}))
         if api_key != settings.API_KEY:
@@ -107,6 +103,10 @@ class ListTracksResource(View):
             tracks = tracks.filter(backend=request.GET["backend"])
         if "positioning" in request.GET: # Positioning mode. (str)
             tracks = tracks.filter(positioning_mode=request.GET["positioning"])
+        if "deviceType" in request.GET: # Device type. (str)
+            tracks = tracks.filter(device_type=request.GET["deviceType"])
+        if "deviceId" in request.GET: # Device ID. (str)
+            tracks = tracks.filter(device_id=request.GET["deviceId"])
         
         # Paginate the tracks.
         page = int(request.GET.get("page", 1))
@@ -130,6 +130,8 @@ class ListTracksResource(View):
                     "debug": track.debug,
                     "backend": track.backend,
                     "positioningMode": track.positioning_mode,
+                    "deviceType": track.device_type,
+                    "deviceId": track.device_id,
                 } 
                 for track in tracks
             ], 
@@ -141,13 +143,9 @@ class ListTracksResource(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class FetchTrackResource(View):
-    def post(self, request):
-        # Get the API key from the request body.
-        try:
-            json_data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return HttpResponseBadRequest(json.dumps({"error": "Invalid request."}))
-        api_key = json_data.get("key", None)
+    def get(self, request):
+        # Get the API key from the request.
+        api_key = request.GET.get("key", None)
         if not api_key:
             return HttpResponseBadRequest(json.dumps({"error": "Missing key."}))
         if api_key != settings.API_KEY:

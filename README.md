@@ -4,14 +4,14 @@ A microservice to receive tracks from users.
 
 ## REST Endpoint
 
-### *POST* `/tracks/fetch/` - Get a single track with an API key.
+### *GET* `/tracks/fetch/` - Get a single track with an API key.
 
 #### Response format
 
 Perform an example request with the example preset route:
 
 ```
-curl -X POST --data "@example-key.json" "http://localhost:8000/tracks/fetch/?pk=1"
+curl "http://localhost:8000/tracks/fetch/?pk=1&key=secret"
 ```
 
 Response:
@@ -27,14 +27,14 @@ Parameters:
 * `key` - The API key to use.
 * `pk` - The primary key of the track to get.
 
-### *POST* `/tracks/list/` - Get tracks with an API key.
+### *GET* `/tracks/list/` - Get tracks with an API key.
 
 #### Response format
 
 Perform an example request with the example preset route:
 
 ```
-curl -X POST --data "@example-key.json" "http://localhost:8000/tracks/list/"
+curl "http://localhost:8000/tracks/list/?key=secret"
 ```
 
 Response:
@@ -50,8 +50,10 @@ Response:
                 "debug": track.debug,
                 "backend": track.backend,
                 "positioningMode": track.positioning_mode,
-            } 
-            for track in tracks
+                "deviceType": track.device_type,
+                "deviceId": track.device_id,
+            },
+            ...
         ], 
         "page": page,
         "pageSize": page_size,
@@ -71,6 +73,8 @@ Parameters:
 * `debug` - If set to `false`, the server won't return debug tracks. Default: `None` (Include all).
 * `backend` - The kind of backend to look for. Default: `None` (Include all).
 * `positioning` - The kind of positioning to look for. Default: `None` (Include all).
+* `deviceType` - The kind of device type to look for. Default: `None` (Include all).
+* `deviceId` - The kind of device ID to look for. Default: `None` (Include all).
 * `page` - The page to get. Default: `1`.
 * `pageSize` - The page size to get. Default: `10`. Limited to `100`.
 
