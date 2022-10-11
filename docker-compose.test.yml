@@ -1,7 +1,7 @@
 # Containers that are needed to execute tests
 services:
-  backend:
-    container_name: backend
+  tracking-service-backend:
+    container_name: tracking-service-backend
     build: .
     env_file:
       - test.env
