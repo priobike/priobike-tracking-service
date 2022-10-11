@@ -17,6 +17,7 @@ jobs:
 
       - name: Run unit tests
         run: |
+          docker container prune -f
           docker-compose -f docker-compose.test.yml up --build -d --force-recreate
           docker exec -w /code backend ls -la
           docker exec -w /code/backend backend poetry run python manage.py test
