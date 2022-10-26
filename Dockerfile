@@ -11,6 +11,10 @@ RUN pip install poetry
 
 WORKDIR /code
 
+# Use the admin interface to check the health of the application
+HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=3 \
+    CMD curl --fail http://localhost:8000/admin || exit 1
+
 # Install Python dependencies separated from the
 # run script to enable Docker caching
 ADD pyproject.toml /code
