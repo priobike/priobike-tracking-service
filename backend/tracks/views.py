@@ -17,49 +17,17 @@ class PostTrackResource(View):
             json_data = json.loads(request.body)
         except json.JSONDecodeError:
             return HttpResponseBadRequest(json.dumps({"error": "Invalid request."}))
-
-        # Unwrap some data from the json that is useful for querying.
-
-        start_time = json_data.get("startTime", None)
-        if not start_time:
-            return HttpResponseBadRequest(json.dumps({"error": "Malformed JSON."}))
-
-        end_time = json_data.get("endTime", None)
-        if not end_time:
-            return HttpResponseBadRequest(json.dumps({"error": "Malformed JSON."}))
-
-        debug = json_data.get("debug", None)
-        if debug is None:
-            return HttpResponseBadRequest(json.dumps({"error": "Malformed JSON."}))
-
-        settings = json_data.get("settings", None)
-        if not settings:
-            return HttpResponseBadRequest(json.dumps({"error": "Malformed JSON."}))
-
-        backend = settings.get("backend", None)
-        if not backend:
-            return HttpResponseBadRequest(json.dumps({"error": "Malformed JSON."}))
-
-        positioning_mode = settings.get("positioningMode", None)
-        if not positioning_mode:
-            return HttpResponseBadRequest(json.dumps({"error": "Malformed JSON."}))
-
-        user_id = json_data.get("userId", "anonymous")
-        session_id = json_data.get("sessionId", "unknown")
-        device_type = json_data.get("deviceType", "unknown")
-        
-        # Make some sanity checks on the requested data.
         try:
             Track.objects.create(
                 raw=json_data,
-                start_time=start_time,
-                end_time=end_time,
-                debug=debug,
-                backend=backend,
-                positioning_mode=positioning_mode,
-                user_id=user_id,
-                session_id=session_id,
-                device_type=device_type,
+                start_time=json_data.get("startTime", None),
+                end_time=json_data.get("endTime", None),
+                debug=json_data.get("debug", False),
+                backend=json_data.get("backend", "unknown"),
+                positioning_mode=json_data.get("positioningMode", "unknown"),
+                user_id=json_data.get("userId", "anonymous"),
+                session_id=json_data.get("sessionId", "unknown"),
+                device_type=json_data.get("deviceType", "unknown"),
             )
         except (ValidationError, KeyError):
             return HttpResponseBadRequest(json.dumps({"error": "Invalid request."}))
