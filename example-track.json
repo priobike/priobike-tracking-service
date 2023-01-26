@@ -2103,22 +2103,7 @@
         "oldestPredictionTime": 1663830056,
         "averagePredictionQuality": 0.8947826086956451
     },
-    "deviceInfo": {
-        "name": "iPhone SE",
-        "model": "iPhone",
-        "systemName": "iOS",
-        "utsname": {
-            "release": "20.6.0",
-            "version": "Darwin Kernel Version 20.6.0: Mon Jun 21 21:23:35 PDT 2021; root:xnu-7195.140.42~10/RELEASE_ARM64_S8000",
-            "machine": "iPhone8,4",
-            "sysname": "Darwin",
-            "nodename": "iPhone-SE"
-        },
-        "systemVersion": "14.7.1",
-        "localizedModel": "iPhone",
-        "identifierForVendor": "6D4D0713-FC37-4193-BF84-ECB46DB7798C",
-        "isPhysicalDevice": "true"
-    },
+    "userId": "6D4D0713-FC37-4193-BF84-ECB46DB7798C",
     "packageInfo": {
         "appName": "priobike",
         "packageName": "de.tu-dresden.priobike",

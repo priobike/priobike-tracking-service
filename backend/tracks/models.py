@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.db import models
-
 from tracks.fields import JSONField
 
 
@@ -29,8 +28,11 @@ class Track(models.Model):
     # The positioning mode that was used to create the track.
     positioning_mode = models.CharField(max_length=255, default='unknown')
 
-    # The device id.
-    device_id = models.CharField(max_length=255, default='unknown')
+    # The user id.
+    user_id = models.CharField(max_length=255, default='unknown')
+
+    # The session id.
+    session_id = models.CharField(max_length=255, default='unknown')
 
     # The device model.
     device_type = models.CharField(max_length=255, default='unknown')
@@ -43,7 +45,7 @@ class Track(models.Model):
         if self.debug:
             output += "[DEBUG] "
         output += f"Positioning: {self.positioning_mode}, Backend: {self.backend}, Date: {self.date}"
-        output += f", Device: {self.device_type} ({self.device_id})"
+        output += f", Device: {self.device_type} ({self.user_id})"
         return output
 
     class Meta:
@@ -51,5 +53,5 @@ class Track(models.Model):
 
 
 class TracksAdmin(admin.ModelAdmin):
-    fields = ('raw', 'start_time', 'end_time', 'debug', 'backend', 'positioning_mode', 'date', 'device_id', 'device_type')
-    readonly_fields = ('raw', 'start_time', 'end_time', 'debug', 'backend', 'positioning_mode', 'date', 'device_id', 'device_type')
+    fields = ('raw', 'start_time', 'end_time', 'debug', 'backend', 'positioning_mode', 'date', 'user_id', 'session_id', 'device_type')
+    readonly_fields = ('raw', 'start_time', 'end_time', 'debug', 'backend', 'positioning_mode', 'date', 'user_id', 'session_id', 'device_type')

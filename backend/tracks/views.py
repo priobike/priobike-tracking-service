@@ -7,7 +7,6 @@ from django.http import HttpResponseBadRequest, JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
-
 from tracks.models import Track
 
 
@@ -53,11 +52,8 @@ class PostTrackResource(View):
         if not device_type:
             return HttpResponseBadRequest(json.dumps({"error": "Missing deviceInfo.name."}))
 
-        device_id = device_info.get("androidId", None) # Android
-        if not device_id:
-            device_id = device_info.get("identifierForVendor", None) # iOS
-        if not device_id:
-            return HttpResponseBadRequest(json.dumps({"error": "Missing deviceInfo.androidId or deviceInfo.identifierForVendor."}))
+        user_id = json_data.get("userId", "anonymous")
+        session_id = json_data.get("sessionId", "unknown")
         
         # Make some sanity checks on the requested data.
         try:
@@ -68,7 +64,8 @@ class PostTrackResource(View):
                 debug=debug,
                 backend=backend,
                 positioning_mode=positioning_mode,
-                device_id=device_id,
+                user_id=user_id,
+                session_id=session_id,
                 device_type=device_type,
             )
         except (ValidationError, KeyError):
@@ -105,8 +102,10 @@ class ListTracksResource(View):
             tracks = tracks.filter(positioning_mode=request.GET["positioning"])
         if "deviceType" in request.GET: # Device type. (str)
             tracks = tracks.filter(device_type=request.GET["deviceType"])
-        if "deviceId" in request.GET: # Device ID. (str)
-            tracks = tracks.filter(device_id=request.GET["deviceId"])
+        if "userId" in request.GET: # User ID. (str)
+            tracks = tracks.filter(user_id=request.GET["userId"])
+        if "sessionId" in request.GET: # Session ID. (str)
+            tracks = tracks.filter(session_id=request.GET["sessionId"])
         
         # Paginate the tracks.
         page = int(request.GET.get("page", 1))
@@ -131,7 +130,8 @@ class ListTracksResource(View):
                     "backend": track.backend,
                     "positioningMode": track.positioning_mode,
                     "deviceType": track.device_type,
-                    "deviceId": track.device_id,
+                    "userId": track.user_id,
+                    "sessionId": track.session_id,
                 } 
                 for track in tracks
             ], 

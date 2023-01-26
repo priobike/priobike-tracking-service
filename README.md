@@ -51,7 +51,7 @@ Response:
                 "backend": track.backend,
                 "positioningMode": track.positioning_mode,
                 "deviceType": track.device_type,
-                "deviceId": track.device_id,
+                "userId": track.user_id,
             },
             ...
         ], 
@@ -74,7 +74,7 @@ Parameters:
 * `backend` - The kind of backend to look for. Default: `None` (Include all).
 * `positioning` - The kind of positioning to look for. Default: `None` (Include all).
 * `deviceType` - The kind of device type to look for. Default: `None` (Include all).
-* `deviceId` - The kind of device ID to look for. Default: `None` (Include all).
+* `userId` - The kind of user ID to look for. Default: `None` (Include all).
 * `page` - The page to get. Default: `1`.
 * `pageSize` - The page size to get. Default: `10`. Limited to `100`.
 
