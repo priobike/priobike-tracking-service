@@ -22,38 +22,31 @@ class PostTrackResource(View):
 
         start_time = json_data.get("startTime", None)
         if not start_time:
-            return HttpResponseBadRequest(json.dumps({"error": "Missing startTime."}))
+            return HttpResponseBadRequest(json.dumps({"error": "Malformed JSON."}))
 
         end_time = json_data.get("endTime", None)
         if not end_time:
-            return HttpResponseBadRequest(json.dumps({"error": "Missing endTime."}))
+            return HttpResponseBadRequest(json.dumps({"error": "Malformed JSON."}))
 
         debug = json_data.get("debug", None)
         if debug is None:
-            return HttpResponseBadRequest(json.dumps({"error": "Missing debug."}))
+            return HttpResponseBadRequest(json.dumps({"error": "Malformed JSON."}))
 
         settings = json_data.get("settings", None)
         if not settings:
-            return HttpResponseBadRequest(json.dumps({"error": "Missing settings."}))
+            return HttpResponseBadRequest(json.dumps({"error": "Malformed JSON."}))
 
         backend = settings.get("backend", None)
         if not backend:
-            return HttpResponseBadRequest(json.dumps({"error": "Missing backend."}))
+            return HttpResponseBadRequest(json.dumps({"error": "Malformed JSON."}))
 
         positioning_mode = settings.get("positioningMode", None)
         if not positioning_mode:
-            return HttpResponseBadRequest(json.dumps({"error": "Missing positioningMode."}))
-
-        device_info = json_data.get("deviceInfo", None)
-        if not device_info:
-            return HttpResponseBadRequest(json.dumps({"error": "Missing deviceInfo."}))
-
-        device_type = device_info.get("name", None)
-        if not device_type:
-            return HttpResponseBadRequest(json.dumps({"error": "Missing deviceInfo.name."}))
+            return HttpResponseBadRequest(json.dumps({"error": "Malformed JSON."}))
 
         user_id = json_data.get("userId", "anonymous")
         session_id = json_data.get("sessionId", "unknown")
+        device_type = json_data.get("deviceType", "unknown")
         
         # Make some sanity checks on the requested data.
         try:
