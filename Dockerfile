@@ -3,6 +3,13 @@ FROM python:3.8
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
+# Install libraries needed for GeoDjango and PostGIS
+# See https://docs.djangoproject.com/en/3.2/ref/contrib/gis/install/geolibs/
+RUN apt-get update && apt-get install -y \
+  binutils \
+  libproj-dev \
+  gdal-bin
+
 # Install Postgres client to check liveness of the database
 RUN apt-get update && apt-get install -y postgresql-client
 
