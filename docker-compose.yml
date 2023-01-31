@@ -4,7 +4,7 @@ networks:
 
 services:
   db:
-    image: postgres
+    image: postgis/postgis:14-3.3
     container_name: postgres
     hostname: db
     networks:
