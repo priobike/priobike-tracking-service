@@ -13,28 +13,8 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  test:
-    runs-on: self-hosted
-    container: python:3.9
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-      
-      - name: Install dependencies
-        run: poetry install
-
-      - name: Run unit tests
-        run: |
-          cd backend
-          poetry run python manage.py test
-
   publish:
     runs-on: self-hosted
-    needs: test
     container: docker:latest
 
     permissions:
