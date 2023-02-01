@@ -88,6 +88,12 @@ Perform an example request with the example preset route:
 curl --data "@example-track.json" http://localhost:8000/tracks/post/
 ```
 
+Or submit a gzipped track:
+
+```
+curl --data-binary "@example-track.json.gz" http://localhost:8000/tracks/post/
+```
+
 Response:
 
 ```

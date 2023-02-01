@@ -1,4 +1,5 @@
 import json
+import zlib
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -13,10 +14,24 @@ from tracks.models import Track
 @method_decorator(csrf_exempt, name='dispatch')
 class PostTrackResource(View):
     def post(self, request):
+        # Try to decode the request body as a gzip stream.
+        # If it fails, try to decode it as a JSON string.
+        json_data = None
+
         try:
-            json_data = json.loads(request.body)
-        except json.JSONDecodeError:
+            print(request.body)
+            json_data = json.loads(zlib.decompress(request.body, 16+zlib.MAX_WBITS).decode("utf-8"))        
+        except OSError:
+            pass
+        except Exception:
             return HttpResponseBadRequest(json.dumps({"error": "Invalid request."}))
+
+        if json_data is None:
+            try:
+                json_data = json.loads(request.body)
+            except json.JSONDecodeError:
+                return HttpResponseBadRequest(json.dumps({"error": "Invalid request."}))
+        
         try:
             Track.objects.create(
                 raw=json_data,

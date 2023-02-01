@@ -24,6 +24,7 @@ services:
     container_name: backend
     volumes:
       - tracking_service_staticfiles:/code/backend/static/
+      - .:/code # Only for development
     networks:
       - production-network
     build: .
@@ -31,6 +32,8 @@ services:
       - dev.env
     depends_on:
       - db
+    ports:
+      - "8000:8000" # HTTP (only for development)
     command:
       - /bin/bash
       - -c
@@ -68,7 +71,7 @@ services:
     # The NGINX proxy service is the only service that listens to the outside world
     ports:
       # This is important for the root NGINX proxy of the server.
-      - "20051:80" # HTTP
+      - "80:80" # HTTP
     networks:
       - production-network
     depends_on:
