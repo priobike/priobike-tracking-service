@@ -20,7 +20,6 @@ class PostTrackResource(View):
 
         # Extract the multipart files.
         try:
-            print(request.FILES)
             metadata_file = request.FILES.get("metadata.json.gz", None)
             metadata = json.loads(zlib.decompress(metadata_file.read(), 16+zlib.MAX_WBITS).decode("utf-8"))
             gps_csv = request.FILES.get("gps.csv.gz", None)
