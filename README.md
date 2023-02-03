@@ -14,10 +14,10 @@ Perform an example request with the example preset route:
 curl "http://localhost:8000/tracks/fetch/?pk=1&key=secret"
 ```
 
-Response:
+Example response:
 
 ```
-{ "pk": <Primary key>, "data": <Raw track data> }
+{"metadata": {"startTime": 0, "endTime": 1, "debug": true, "backend": "staging", "positioningMode": "gnss", "userId": "[012345]", "sessionId": "[012345]", "deviceType": "iPhone 11,2", "deviceHeight": 812, "deviceWidth": 375, "appVersion": "1.0.0", "buildNumber": "1234", "statusSummary": {}, "taps": [], "selectedWaypoints": [], "routes": [], "predictions": []}, "gpsCSV": "timestamp,longitude,latitude,speed,accuracy\n0,0,0,0,0", "accelerometerCSV": "timestamp,x,y,z\n0,0,0,0", "gyroscopeCSV": "timestamp,x,y,z\n0,0,0,0", "magnetometerCSV": "timestamp,x,y,z\n0,0,0,0", "pk": 9}
 ```
 
 If anything else happens, the server will respond with a response code other than 200.
@@ -82,16 +82,16 @@ Parameters:
 
 #### Response format
 
-Perform an example request with the example preset route:
+Perform an example multipart request:
 
 ```
-curl --data "@example-track.json" http://localhost:8000/tracks/post/
-```
-
-Or submit a gzipped track:
-
-```
-curl --data-binary "@example-track.json.gz" http://localhost:8000/tracks/post/
+curl -X POST \
+    -F gps.csv.gz='@example-gps.csv.gz' \
+    -F accelerometer.csv.gz='@example-accelerometer.csv.gz' \
+    -F magnetometer.csv.gz='@example-magnetometer.csv.gz' \
+    -F gyroscope.csv.gz='@example-gyroscope.csv.gz' \
+    -F metadata.json.gz='@example-metadata.json.gz' \
+    http://localhost:8000/tracks/post/
 ```
 
 Response:

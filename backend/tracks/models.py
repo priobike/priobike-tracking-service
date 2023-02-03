@@ -10,14 +10,15 @@ class Track(models.Model):
     The track stores the raw json data that is sent to the server.
     Additionally, it extracts some information that is useful for querying.
     """
-    # The plain json data of the track.
-    raw = JSONField()
+
+    ####### Fields that are extracted from the raw json data for querying. #######
 
     # The start time of the track in unix milliseconds since epoch.
     start_time = models.BigIntegerField()
 
     # The end time of the track in unix milliseconds since epoch.
-    end_time = models.BigIntegerField()
+    # Can be null if the app was terminated before the track was finished.
+    end_time = models.BigIntegerField(null=True, blank=True)
 
     # If the track was created in debug mode.
     debug = models.BooleanField(default=False)
@@ -40,6 +41,23 @@ class Track(models.Model):
     # The date the track was received.
     date = models.DateTimeField(auto_now_add=True)
 
+    ####### Fields that contain raw data. #######
+
+    # The plain json data of the track.
+    metadata = JSONField()
+
+    # The CSV file containing the GPS data.
+    gps_csv = models.TextField(null=True, blank=True)
+
+    # The CSV file containing the accelerometer data.
+    accelerometer_csv = models.TextField(null=True, blank=True)
+
+    # The CSV file containing the gyroscope data.
+    gyroscope_csv = models.TextField(null=True, blank=True)
+
+    # The CSV file containing the magnetometer data.
+    magnetometer_csv = models.TextField(null=True, blank=True)
+
     def __str__(self):
         output = ""
         if self.debug:
@@ -53,5 +71,35 @@ class Track(models.Model):
 
 
 class TracksAdmin(admin.ModelAdmin):
-    fields = ('raw', 'start_time', 'end_time', 'debug', 'backend', 'positioning_mode', 'date', 'user_id', 'session_id', 'device_type')
-    readonly_fields = ('raw', 'start_time', 'end_time', 'debug', 'backend', 'positioning_mode', 'date', 'user_id', 'session_id', 'device_type')
+    fields = (
+        'start_time',
+        'end_time',
+        'debug',
+        'backend',
+        'positioning_mode',
+        'user_id',
+        'session_id',
+        'device_type',
+        'date',
+        'metadata',
+        'gps_csv',
+        'accelerometer_csv',
+        'gyroscope_csv',
+        'magnetometer_csv',
+    )
+    readonly_fields = (
+        'start_time',
+        'end_time',
+        'debug',
+        'backend',
+        'positioning_mode',
+        'user_id',
+        'session_id',
+        'device_type',
+        'date',
+        'metadata',
+        'gps_csv',
+        'accelerometer_csv',
+        'gyroscope_csv',
+        'magnetometer_csv',
+    )

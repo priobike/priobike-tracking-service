@@ -157,6 +157,9 @@ STATIC_URL = f'{APP_URL}static/'
 # Collect static files in deployment so that NGINX can access them.
 STATIC_ROOT =  os.path.join(BASE_DIR, 'static')
 
+# Security warning: don't expose the media folder to the internet.
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 

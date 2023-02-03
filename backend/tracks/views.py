@@ -14,35 +14,44 @@ from tracks.models import Track
 @method_decorator(csrf_exempt, name='dispatch')
 class PostTrackResource(View):
     def post(self, request):
-        # Try to decode the request body as a gzip stream.
-        # If it fails, try to decode it as a JSON string.
-        json_data = None
-
-        try:
-            print(request.body)
-            json_data = json.loads(zlib.decompress(request.body, 16+zlib.MAX_WBITS).decode("utf-8"))        
-        except OSError:
-            pass
-        except Exception:
+        # This view only accepts multipart files.
+        if not request.content_type.startswith("multipart/form-data"):
             return HttpResponseBadRequest(json.dumps({"error": "Invalid request."}))
 
-        if json_data is None:
-            try:
-                json_data = json.loads(request.body)
-            except json.JSONDecodeError:
-                return HttpResponseBadRequest(json.dumps({"error": "Invalid request."}))
-        
+        # Extract the multipart files.
+        try:
+            print(request.FILES)
+            metadata_file = request.FILES.get("metadata.json.gz", None)
+            metadata = json.loads(zlib.decompress(metadata_file.read(), 16+zlib.MAX_WBITS).decode("utf-8"))
+            gps_csv = request.FILES.get("gps.csv.gz", None)
+            gps_str = zlib.decompress(gps_csv.read(), 16+zlib.MAX_WBITS).decode("utf-8")
+            accelerometer_csv = request.FILES.get("accelerometer.csv.gz", None)
+            accelerometer_str = zlib.decompress(accelerometer_csv.read(), 16+zlib.MAX_WBITS).decode("utf-8")
+            gyroscope_csv = request.FILES.get("gyroscope.csv.gz", None)
+            gyroscope_str = zlib.decompress(gyroscope_csv.read(), 16+zlib.MAX_WBITS).decode("utf-8")
+            magnetometer_csv = request.FILES.get("magnetometer.csv.gz", None)
+            magnetometer_str = zlib.decompress(magnetometer_csv.read(), 16+zlib.MAX_WBITS).decode("utf-8")
+        except Exception as e:
+            print(e)
+            return HttpResponseBadRequest(json.dumps({"error": "Invalid request."}))
+
         try:
             Track.objects.create(
-                raw=json_data,
-                start_time=json_data.get("startTime", None),
-                end_time=json_data.get("endTime", None),
-                debug=json_data.get("debug", False),
-                backend=json_data.get("backend", "unknown"),
-                positioning_mode=json_data.get("positioningMode", "unknown"),
-                user_id=json_data.get("userId", "anonymous"),
-                session_id=json_data.get("sessionId", "unknown"),
-                device_type=json_data.get("deviceType", "unknown"),
+                # Fields that are extracted from the raw json data for querying.
+                start_time=metadata.get("startTime", None),
+                end_time=metadata.get("endTime", None),
+                debug=metadata.get("debug", False),
+                backend=metadata.get("backend", "unknown"),
+                positioning_mode=metadata.get("positioningMode", "unknown"),
+                user_id=metadata.get("userId", "anonymous"),
+                session_id=metadata.get("sessionId", "unknown"),
+                device_type=metadata.get("deviceType", "unknown"),
+                # Fields that contain raw data.
+                metadata=metadata,
+                gps_csv=gps_str,
+                accelerometer_csv=accelerometer_str,
+                gyroscope_csv=gyroscope_str,
+                magnetometer_csv=magnetometer_str,
             )
         except (ValidationError, KeyError):
             return HttpResponseBadRequest(json.dumps({"error": "Invalid request."}))
@@ -135,6 +144,10 @@ class FetchTrackResource(View):
             return HttpResponseBadRequest(json.dumps({"error": "Invalid pk."}))
 
         return JsonResponse({
-            "data": track.raw,
+            "metadata": track.metadata,
+            "gpsCSV": track.gps_csv,
+            "accelerometerCSV": track.accelerometer_csv,
+            "gyroscopeCSV": track.gyroscope_csv,
+            "magnetometerCSV": track.magnetometer_csv,
             "pk": track.pk,
         })
