@@ -2,6 +2,7 @@ import pandas as pd
 from io import StringIO
 from django.core.management.base import BaseCommand
 from tracks.models import Track
+from answers.models import Answer
 
 class Command(BaseCommand):
     help = """ Removes all tracks that don't meet certain criteria.
@@ -40,7 +41,7 @@ class Command(BaseCommand):
             raise ValueError("Track is out of bounding box of the city.")
 
     def handle(self, *args, **options):
-        print(f"Starting scheduled clean up of tracks... Current number of tracks: {Track.objects.count()}")
+        print(f"Starting scheduled clean up of tracks and feedback... Current number of tracks: {Track.objects.count()}. Current number of answers: {Answer.objects.count()}.")
         
         track_ids_to_delete = []
         
@@ -53,4 +54,8 @@ class Command(BaseCommand):
                 
         Track.objects.filter(id__in=track_ids_to_delete).delete()
         
-        print(f"Finished clean up of tracks. Number of tracks after clean up: {Track.objects.count()}")
+        session_ids_to_keep = Track.objects.values('session_id').distinct()
+        # Delete all answers that are not associated with a valid track.
+        Answer.objects.exclude(session_id__in=session_ids_to_keep).delete()
+        
+        print(f"Finished clean up of tracks. Number of tracks after clean up: {Track.objects.count()}. Number of answers after clean up: {Answer.objects.count()}.")
