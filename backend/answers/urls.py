@@ -2,7 +2,7 @@ from django.urls import path
 
 from . import views
 
-app_name = 'news'
+app_name = 'answers'
 
 urlpatterns = [
     path("post/", views.PostAnswerResource.as_view(), name="send-answer"),
