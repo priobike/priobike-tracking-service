@@ -1,36 +1,56 @@
+import pandas as pd
+from io import StringIO
 from django.core.management.base import BaseCommand
-from tracks.models.track import Track
+from tracks.models import Track
 
 class Command(BaseCommand):
     help = """ Removes all tracks that don't meet certain criteria.
     For example, used to delete tracks that get created during development and thus don't contain any useful real world usage data. """
+    
+    def validate_track(self, track):
+        if track.debug:
+            raise ValueError("Track is in debug mode.")
+        if track.positioning_mode != "gnss":
+            raise ValueError("Track is created using mock position mode.")
+        
+        track_gps_data = pd.read_csv(StringIO(track.gps_csv), sep=",")
+        
+        if len(track_gps_data.index) < 6:
+            raise ValueError("Track is too short.")
+        
+        # Get the maximum and minimum latitude and longitude values of the track.
+        track_max_lat = track_gps_data['latitude'].max()
+        track_min_lat = track_gps_data['latitude'].min()
+        track_max_lon = track_gps_data['longitude'].max()
+        track_min_lon = track_gps_data['longitude'].min()
+        
+        if track.backend == 'staging':
+            # Bounding box Dresden 
+            min_lat, max_lat = 50.8, 51.3
+            min_lon, max_lon = 13.2, 14.3
+        elif track.backend == 'production':
+            # Bounds for Hamburg
+            min_lat, max_lat = 53.1, 54.0
+            min_lon, max_lon = 9.1, 10.9
+        else:
+            raise ValueError("Track is not from a valid backend.")
+        
+        # Check if the track is fully within the bounding box of the city.
+        if track_max_lat > max_lat or track_min_lat < min_lat or track_max_lon > max_lon or track_min_lon < min_lon:
+            raise ValueError("Track is out of bounding box of the city.")
 
-    def handle(self):
-        print(f"Starting scheduled clean up of tracks... Current amount of tracks: {Track.objects.count()}")
+    def handle(self, *args, **options):
+        print(f"Starting scheduled clean up of tracks... Current number of tracks: {Track.objects.count()}")
         
-        tracks = Track.objects.all()
+        track_ids_to_delete = []
         
-        # Used for logging purposes.
-        debug_count = 0
-        staging_count = 0
-        positioning_mode_count = 0
+        for track in Track.objects.all():
+            try:
+                self.validate_track(track=track)
+            except ValueError as e:
+                track_ids_to_delete.append(track.id)
+                print(f"Deleting track with id {track.id}. Reason: {e}")
+                
+        Track.objects.filter(id__in=track_ids_to_delete).delete()
         
-        for track in tracks:
-            if track.debug:
-                track.delete()
-                debug_count += 1
-                continue
-            if track.backend == 'staging':
-                track.delete()
-                staging_count += 1
-                continue
-            if track.positioning_mode == 'follow18kmh' or track.positioning_mode == 'follow40kmh' or\
-            track.positioning_mode == 'recordedDresden' or track.positioning_mode == 'recordedHamburg' or\
-            track.positioning_mode == 'hamburgStatic1' or track.positioning_mode == 'dresdenStatic1' or\
-            track.positioning_mode == 'dresdenStatic2':
-                positioning_mode_count += 1
-                track.delete()
-                continue
-            
-        print(f""" Cleaned up {debug_count + staging_count + positioning_mode_count} tracks in total. Amount of tracks after clean up: {Track.objects.count()}
-              Reasons: {debug_count}x times debug mode, {staging_count}x times staging backend, {positioning_mode_count}x times positioning mode. """)
+        print(f"Finished clean up of tracks. Number of tracks after clean up: {Track.objects.count()}")
