@@ -19,6 +19,7 @@ from django.urls import include, path
 
 urlpatterns = [
     path('tracks/', include('tracks.urls')),
+    path('answers/', include('answers.urls')),
 
     path(settings.ADMIN_URL, admin.site.urls),
 ]

@@ -1,8 +1,8 @@
 # Tracking Service
 
-A microservice to receive tracks from users.
+A microservice to receive tracks and feedback from users.
 
-## REST Endpoint
+## Tracks - REST Endpoint
 
 ### *GET* `/tracks/fetch/` - Get a single track with an API key.
 
@@ -92,6 +92,51 @@ curl -X POST \
     -F gyroscope.csv.gz='@example-gyroscope.csv.gz' \
     -F metadata.json.gz='@example-metadata.json.gz' \
     http://localhost:8000/tracks/post/
+```
+
+Response:
+
+```
+{
+    "success": true
+}
+```
+
+If anything else happens, the server will respond with a response code other than 200.
+
+## Feedback REST Endpoint
+
+### *POST* `/answers/post/` - Post a new answer.
+
+#### Request format
+
+Publish a new answer. The body of the POST request should contain at least the following information:
+
+```
+{
+    "userId": <The id of the user. Max length: 100>,
+    "questionText": <The text of the question. Max length: 300>
+}
+```
+
+However, there are more fields that can be passed:
+
+```
+{
+    "userId": <The id of the user. Max length: 100>,
+    "questionText": <The text of the question. Max length: 300>,
+    "questionImage": <The base 64 encoded image of this question, if provided. Max length: 10MB>,
+    "sessionId": <The id of the session, if provided. Max length: 100>,
+    "value": <The value of the answer, if provided. Max length: 1000>
+}
+```
+
+#### Response format
+
+Perform an example request with the example preset route:
+
+```
+curl --data "@example.json" http://localhost:8000/answers/post/
 ```
 
 Response:
