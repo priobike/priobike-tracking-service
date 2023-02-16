@@ -50,6 +50,7 @@ API_KEY = os.environ.get('API_KEY', 'secret')
 
 INSTALLED_APPS = [
     'tracks',
+    'answers',
 
     'django.contrib.admin',
     'django.contrib.auth',
