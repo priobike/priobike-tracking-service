@@ -41,6 +41,15 @@ class Track(models.Model):
     # The date the track was received.
     date = models.DateTimeField(auto_now_add=True)
 
+    # The bike type that was used to create the track.
+    bike_type = models.CharField(max_length=255, default='unknown')
+
+    # The preference type that was used to create the track.
+    preference_type = models.CharField(max_length=255, default='unknown')
+
+    # The activity type that was used to create the track.
+    activity_type = models.CharField(max_length=255, default='unknown')
+
     ####### Fields that contain raw data. #######
 
     # The plain json data of the track.

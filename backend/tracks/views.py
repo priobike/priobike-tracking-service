@@ -45,6 +45,9 @@ class PostTrackResource(View):
                 user_id=metadata.get("userId", "anonymous"),
                 session_id=metadata.get("sessionId", "unknown"),
                 device_type=metadata.get("deviceType", "unknown"),
+                bike_type=metadata.get("bikeType", "unknown"),
+                preference_type=metadata.get("preferenceType", "unknown"),
+                activity_type=metadata.get("activityType", "unknown"),
                 # Fields that contain raw data.
                 metadata=metadata,
                 gps_csv=gps_str,

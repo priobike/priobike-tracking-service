@@ -41,6 +41,30 @@ class GetMetricsResource(View):
         for device_type, count in counts:
             metrics.append(f'n_tracks_by_device_type{{device_type="{device_type}"}} {count}')
 
+        # Count the numbers of bike types.
+        counts = Track.objects \
+            .values("bike_type") \
+            .annotate(v=Count('bike_type')) \
+            .values_list("bike_type", "v")
+        for bike_type, count in counts:
+            metrics.append(f'n_tracks_by_bike_type{{bike_type="{bike_type}"}} {count}')
+
+        # Count the number of preference types.
+        counts = Track.objects \
+            .values("preference_type") \
+            .annotate(v=Count('preference_type')) \
+            .values_list("preference_type", "v")
+        for preference_type, count in counts:
+            metrics.append(f'n_tracks_by_preference_type{{preference_type="{preference_type}"}} {count}')
+
+        # Count the number of activity types.
+        counts = Track.objects \
+            .values("activity_type") \
+            .annotate(v=Count('activity_type')) \
+            .values_list("activity_type", "v")
+        for activity_type, count in counts:
+            metrics.append(f'n_tracks_by_activity_type{{activity_type="{activity_type}"}} {count}')
+
         # Count the distribution of in-app ratings.
         rating_answers = Answer.objects.filter(question_text='Dein Feedback zur App')
         counts = rating_answers \
