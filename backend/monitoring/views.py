@@ -66,13 +66,18 @@ class GetMetricsResource(View):
             metrics.append(f'n_tracks_by_activity_type{{activity_type="{activity_type}"}} {count}')
 
         # Count the distribution of in-app ratings.
-        rating_answers = Answer.objects.filter(question_text='Dein Feedback zur App')
-        counts = rating_answers \
+        # Only get the most recent rating for each user (user_id field)
+        # and only count the ratings for the "Dein Feedback zur App" question.
+        most_recent_ratings = Answer.objects \
+            .filter(question_text="Dein Feedback zur App") \
+            .order_by("user_id", "-date") \
+            .distinct("user_id")
+        counts = most_recent_ratings \
             .values("value") \
             .annotate(v=Count('value')) \
             .values_list("value", "v")
-        for rating, count in counts:
-            metrics.append(f'n_ratings{{rating="{rating}"}} {count}')
+        for value, count in counts:
+            metrics.append(f'n_ratings{{rating="{value}"}} {count}')
 
         content = '\n'.join(metrics) + '\n'
         return HttpResponse(content, content_type='text/plain')
