@@ -72,12 +72,13 @@ class GetMetricsResource(View):
             .filter(question_text="Dein Feedback zur App") \
             .order_by("user_id", "-date") \
             .distinct("user_id")
-        counts = most_recent_ratings \
-            .values("value") \
-            .annotate(v=Count('value')) \
-            .values_list("value", "v")
-        for value, count in counts:
-            metrics.append(f'n_ratings{{rating="{value}"}} {count}')
+        # Count in Python
+        counts = {}
+        for rating in most_recent_ratings:
+            counts[rating.value] = counts.get(rating.value, 0) + 1
+        # Add the counts to the metrics.
+        for rating, count in counts.items():
+            metrics.append(f'n_app_ratings{{rating="{rating}"}} {count}')
 
         content = '\n'.join(metrics) + '\n'
         return HttpResponse(content, content_type='text/plain')
