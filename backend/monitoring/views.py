@@ -78,7 +78,7 @@ class GetMetricsResource(View):
             counts[rating.value] = counts.get(rating.value, 0) + 1
         # Add the counts to the metrics.
         for rating, count in counts.items():
-            metrics.append(f'n_app_ratings{{rating="{rating}"}} {count}')
+            metrics.append(f'r_ratings{{rating="{rating}"}} {count}')
 
         content = '\n'.join(metrics) + '\n'
         return HttpResponse(content, content_type='text/plain')
