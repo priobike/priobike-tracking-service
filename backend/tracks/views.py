@@ -4,7 +4,7 @@ import zlib
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.http import HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponseBadRequest, JsonResponse, HttpResponseServerError
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
@@ -55,8 +55,12 @@ class PostTrackResource(View):
                 gyroscope_csv=gyroscope_str,
                 magnetometer_csv=magnetometer_str,
             )
-        except (ValidationError, KeyError):
+        except (ValidationError, KeyError) as e:
+            print(e)
             return HttpResponseBadRequest(json.dumps({"error": "Invalid request."}))
+        except Exception as e:
+            print(e)
+            return HttpResponseServerError(json.dumps({"error": "Unknown error."}))
         
         return JsonResponse({"success": True})
 
