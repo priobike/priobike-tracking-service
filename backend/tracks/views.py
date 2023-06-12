@@ -4,7 +4,7 @@ import zlib
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.http import HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponseBadRequest, JsonResponse, HttpResponseServerError
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
@@ -39,15 +39,15 @@ class PostTrackResource(View):
                 # Fields that are extracted from the raw json data for querying.
                 start_time=metadata.get("startTime", None),
                 end_time=metadata.get("endTime", None),
-                debug=metadata.get("debug", False),
-                backend=metadata.get("backend", "unknown"),
-                positioning_mode=metadata.get("positioningMode", "unknown"),
-                user_id=metadata.get("userId", "anonymous"),
-                session_id=metadata.get("sessionId", "unknown"),
-                device_type=metadata.get("deviceType", "unknown"),
-                bike_type=metadata.get("bikeType", "unknown"),
-                preference_type=metadata.get("preferenceType", "unknown"),
-                activity_type=metadata.get("activityType", "unknown"),
+                debug=metadata.get("debug", False) if metadata.get("debug", False) != None else False,
+                backend=metadata.get("backend", "unknown") if metadata.get("backend", "unknown") != None else "unknown",
+                positioning_mode=metadata.get("positioningMode", "unknown") if metadata.get("positioningMode", "unknown") != None else "unknown",
+                user_id=metadata.get("userId", "anonymous") if metadata.get("userId", "anonymous") != None else "anonymous",
+                session_id=metadata.get("sessionId", "unknown") if metadata.get("sessionId", "unknown") != None else "unknown",
+                device_type=metadata.get("deviceType", "unknown") if metadata.get("deviceType", "unknown") != None else "unknown",
+                bike_type=metadata.get("bikeType", "unknown") if metadata.get("bikeType", "unknown") != None else "unknown",
+                preference_type=metadata.get("preferenceType", "unknown") if metadata.get("preferenceType", "unknown") != None else "unknown",
+                activity_type=metadata.get("activityType", "unknown") if metadata.get("activityType", "unknown") != None else "unknown",
                 # Fields that contain raw data.
                 metadata=metadata,
                 gps_csv=gps_str,
@@ -55,8 +55,12 @@ class PostTrackResource(View):
                 gyroscope_csv=gyroscope_str,
                 magnetometer_csv=magnetometer_str,
             )
-        except (ValidationError, KeyError):
+        except (ValidationError, KeyError) as e:
+            print(e)
             return HttpResponseBadRequest(json.dumps({"error": "Invalid request."}))
+        except Exception as e:
+            print(e)
+            return HttpResponseServerError(json.dumps({"error": "Unknown error."}))
         
         return JsonResponse({"success": True})
 
