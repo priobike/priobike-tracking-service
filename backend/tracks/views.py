@@ -97,6 +97,11 @@ class ListTracksResource(View):
             tracks = tracks.filter(user_id=request.GET["userId"])
         if "sessionId" in request.GET: # Session ID. (str)
             tracks = tracks.filter(session_id=request.GET["sessionId"])
+        if "pk" in request.GET: # Primary key. (int)
+            tracks = tracks.filter(pk__gt=int(request.GET["pk"]))
+        
+        # Order the tracks by pk.
+        tracks = tracks.order_by("pk")
         
         # Paginate the tracks.
         page = int(request.GET.get("page", 1))
