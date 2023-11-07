@@ -19,12 +19,6 @@ class Command(BaseCommand):
         if len(track_gps_data.index) < 6:
             raise ValueError("Track is too short.")
         
-        # Get the maximum and minimum latitude and longitude values of the track.
-        track_max_lat = track_gps_data['latitude'].max()
-        track_min_lat = track_gps_data['latitude'].min()
-        track_max_lon = track_gps_data['longitude'].max()
-        track_min_lon = track_gps_data['longitude'].min()
-        
         if track.backend == 'staging':
             # Bounding box Dresden 
             min_lat, max_lat = 50.8, 51.3
@@ -33,8 +27,22 @@ class Command(BaseCommand):
             # Bounds for Hamburg
             min_lat, max_lat = 53.1, 54.0
             min_lon, max_lon = 9.1, 10.9
+        elif track.backend == 'release':
+            # Bounds for Hamburg
+            min_lat, max_lat = 53.1, 54.0
+            min_lon, max_lon = 9.1, 10.9
         else:
             raise ValueError("Track is not from a valid backend.")
+        
+        # Get the maximum and minimum latitude and longitude values of the track.
+        try:
+            track_max_lat = track_gps_data['latitude'].max()
+            track_min_lat = track_gps_data['latitude'].min()
+            track_max_lon = track_gps_data['longitude'].max()
+            track_min_lon = track_gps_data['longitude'].min()
+        except KeyError as e:
+            print(f"Track with id {track.id} has no latitude or longitude column (in GPS data).")
+            return
         
         # Check if the track is fully within the bounding box of the city.
         if track_max_lat > max_lat or track_min_lat < min_lat or track_max_lon > max_lon or track_min_lon < min_lon:
