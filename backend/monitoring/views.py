@@ -20,7 +20,12 @@ class GetMetricsResource(View):
             return HttpResponseBadRequest()
 
         metrics = []
-        metrics.append(f'n_tracks {Track.objects.count()}')
+
+        # Add debug tracks to n_tracks.
+        metrics.append(f'n_tracks{{debug=\"true\"}} {Track.objects.filter(debug=True).count()}')
+        # Add valid tracks to n_tracks.
+        metrics.append(f'n_tracks{{debug=\"false\"}} {Track.objects.filter(debug=False).count()}')
+
         metrics.append(f'n_answers {Answer.objects.count()}')
 
         # Sum up how much time users spent riding.

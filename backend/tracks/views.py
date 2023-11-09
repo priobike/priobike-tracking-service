@@ -76,17 +76,17 @@ class ListTracksResource(View):
             return HttpResponseBadRequest(json.dumps({"error": "Invalid key."}))
 
         tracks = Track.objects.all()
+
+        # Always fetch non debug tracks.
+        tracks = tracks.filter(debug=False)
+
+        print(tracks)
         
         # Filter the tracks by the requested parameters.
         if "from" in request.GET: # Start time. (int)
             tracks = tracks.filter(start_time__gte=int(request.GET["from"]))
         if "to" in request.GET: # End time. (int)
             tracks = tracks.filter(end_time__lte=int(request.GET["to"]))
-        if "debug" in request.GET: # Debug mode. (bool)
-            if request.GET["debug"] == "true":
-                tracks = tracks.filter(debug=True)
-            elif request.GET["debug"] == "false":
-                tracks = tracks.filter(debug=False)
         if "backend" in request.GET: # Backend. (str)
             tracks = tracks.filter(backend=request.GET["backend"])
         if "positioning" in request.GET: # Positioning mode. (str)
