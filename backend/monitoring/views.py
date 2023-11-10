@@ -26,25 +26,45 @@ class GetMetricsResource(View):
         # Add valid tracks to n_tracks.
         metrics.append(f'n_tracks{{debug=\"false\"}} {Track.objects.filter(debug=False).count()}')
 
-        metrics.append(f'n_answers {Answer.objects.count()}')
+        # Add debug answers.
+        metrics.append(f'n_answers{{debug=\"true\"}} {Answer.objects.filter(user_id__contains="Biker-Swarm").count()}')
+        # Add valid answers.
+        metrics.append(f'n_answers{{debug=\"false\"}} {Answer.objects.exclude(user_id__contains="Biker-Swarm").count()}')
 
         # Sum up how much time users spent riding.
-        tracks_with_end_time = Track.objects.exclude(end_time=None)
-        # Use an aggregate to sum up the duration of all tracks.
+        tracks_with_end_time_debug = Track.objects.filter(debug=True).exclude(end_time=None)
+        tracks_with_end_time = Track.objects.filter(debug=False).exclude(end_time=None)
+
+        # Use an aggregate to sum up the duration of all debug tracks.
+        sum_of_starts = tracks_with_end_time_debug.aggregate(v=Sum('start_time'))['v']
+        sum_of_ends = tracks_with_end_time_debug.aggregate(v=Sum('end_time'))['v']
+        metrics.append(f'n_seconds_riding{{debug=\"true\"}} {(sum_of_ends - sum_of_starts) // 1000}')
+        print(sum_of_starts, sum_of_ends)
+        # Use an aggregate to sum up the duration of all valid tracks.
         sum_of_starts = tracks_with_end_time.aggregate(v=Sum('start_time'))['v']
         sum_of_ends = tracks_with_end_time.aggregate(v=Sum('end_time'))['v']
-        metrics.append(f'n_seconds_riding {(sum_of_ends - sum_of_starts) // 1000}')
+        print(sum_of_starts, sum_of_ends)
+        metrics.append(f'n_seconds_riding{{debug=\"false\"}} {(sum_of_ends - sum_of_starts) // 1000}')
 
         # Calculate the number of unique users.
-        metrics.append(f'n_users {Track.objects.values("user_id").distinct().count()}')
+        metrics.append(f'n_users{{debug=\"false\"}} {Track.objects.filter(debug=False).values("user_id").distinct().count()}')
+        metrics.append(f'n_users{{debug=\"true\"}} {Track.objects.filter(debug=True).values("user_id").distinct().count()}')
 
-        # Count the numbers each device_type occurs in the database.
-        counts = Track.objects \
+        # Count the numbers each device_type occurs in the database debug.
+        counts = Track.objects.filter(debug=True) \
             .values("device_type") \
             .annotate(v=Count('device_type')) \
             .values_list("device_type", "v")
         for device_type, count in counts:
-            metrics.append(f'n_tracks_by_device_type{{device_type="{device_type}"}} {count}')
+            metrics.append(f'n_tracks_by_device_type{{device_type="{device_type}, debug=\"true\""}} {count}')
+
+        # Count the numbers each device_type occurs in the database debug.
+        counts = Track.objects.filter(debug=False) \
+            .values("device_type") \
+            .annotate(v=Count('device_type')) \
+            .values_list("device_type", "v")
+        for device_type, count in counts:
+            metrics.append(f'n_tracks_by_device_type{{device_type="{device_type}, debug=\"false\""}} {count}')
 
         # Count the numbers of bike types.
         counts = Track.objects \
