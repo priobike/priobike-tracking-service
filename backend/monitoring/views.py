@@ -36,13 +36,13 @@ class GetMetricsResource(View):
         tracks_with_end_time = Track.objects.filter(debug=False).exclude(end_time=None)
 
         # Use an aggregate to sum up the duration of all debug tracks.
-        sum_of_starts = tracks_with_end_time_debug.aggregate(v=Sum('start_time'))['v']
-        sum_of_ends = tracks_with_end_time_debug.aggregate(v=Sum('end_time'))['v']
+        sum_of_starts = tracks_with_end_time_debug.aggregate(v=Sum('start_time'))['v'] or 0
+        sum_of_ends = tracks_with_end_time_debug.aggregate(v=Sum('end_time'))['v'] or 0
         metrics.append(f'n_seconds_riding{{debug=\"true\"}} {(sum_of_ends - sum_of_starts) // 1000}')
         
         # Use an aggregate to sum up the duration of all valid tracks.
-        sum_of_starts = tracks_with_end_time.aggregate(v=Sum('start_time'))['v']
-        sum_of_ends = tracks_with_end_time.aggregate(v=Sum('end_time'))['v']
+        sum_of_starts = tracks_with_end_time.aggregate(v=Sum('start_time'))['v'] or 0
+        sum_of_ends = tracks_with_end_time.aggregate(v=Sum('end_time'))['v'] or 0
         
         metrics.append(f'n_seconds_riding{{debug=\"false\"}} {(sum_of_ends - sum_of_starts) // 1000}')
 
@@ -97,6 +97,7 @@ class GetMetricsResource(View):
             .filter(question_text="Dein Feedback zur App") \
             .order_by("user_id", "-date") \
             .distinct("user_id")
+        
         # Count in Python
         counts = {}
         for rating in most_recent_ratings:
