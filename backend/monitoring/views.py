@@ -56,7 +56,7 @@ class GetMetricsResource(View):
             .annotate(v=Count('device_type')) \
             .values_list("device_type", "v")
         for device_type, count in counts:
-            metrics.append(f'n_tracks_by_device_type{{device_type="{device_type}, debug=\"true\""}} {count}')
+            metrics.append(f'n_tracks_by_device_type{{device_type="{device_type}", debug=\"true\"}} {count}')
 
         # Count the numbers each device_type occurs in the database debug.
         counts = Track.objects.filter(debug=False) \
@@ -64,7 +64,7 @@ class GetMetricsResource(View):
             .annotate(v=Count('device_type')) \
             .values_list("device_type", "v")
         for device_type, count in counts:
-            metrics.append(f'n_tracks_by_device_type{{device_type="{device_type}, debug=\"false\""}} {count}')
+            metrics.append(f'n_tracks_by_device_type{{device_type="{device_type}", debug=\"false\"}} {count}')
 
         # Count the numbers of bike types.
         counts = Track.objects \
