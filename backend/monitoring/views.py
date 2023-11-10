@@ -39,11 +39,11 @@ class GetMetricsResource(View):
         sum_of_starts = tracks_with_end_time_debug.aggregate(v=Sum('start_time'))['v']
         sum_of_ends = tracks_with_end_time_debug.aggregate(v=Sum('end_time'))['v']
         metrics.append(f'n_seconds_riding{{debug=\"true\"}} {(sum_of_ends - sum_of_starts) // 1000}')
-        print(sum_of_starts, sum_of_ends)
+        
         # Use an aggregate to sum up the duration of all valid tracks.
         sum_of_starts = tracks_with_end_time.aggregate(v=Sum('start_time'))['v']
         sum_of_ends = tracks_with_end_time.aggregate(v=Sum('end_time'))['v']
-        print(sum_of_starts, sum_of_ends)
+        
         metrics.append(f'n_seconds_riding{{debug=\"false\"}} {(sum_of_ends - sum_of_starts) // 1000}')
 
         # Calculate the number of unique users.
