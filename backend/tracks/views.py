@@ -79,8 +79,6 @@ class ListTracksResource(View):
 
         # Always fetch non debug tracks.
         tracks = tracks.filter(debug=False)
-
-        print(tracks)
         
         # Filter the tracks by the requested parameters.
         if "from" in request.GET: # Start time. (int)
