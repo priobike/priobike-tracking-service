@@ -25,11 +25,11 @@ class PostTrackResource(View):
             gps_csv = request.FILES.get("gps.csv.gz", None)
             gps_str = zlib.decompress(gps_csv.read(), 16+zlib.MAX_WBITS).decode("utf-8")
             accelerometer_csv = request.FILES.get("accelerometer.csv.gz", None)
-            accelerometer_str = zlib.decompress(accelerometer_csv.read(), 16+zlib.MAX_WBITS).decode("utf-8")
+            accelerometer_str = zlib.decompress(accelerometer_csv.read(), 16+zlib.MAX_WBITS).decode("utf-8") if accelerometer_csv else None
             gyroscope_csv = request.FILES.get("gyroscope.csv.gz", None)
-            gyroscope_str = zlib.decompress(gyroscope_csv.read(), 16+zlib.MAX_WBITS).decode("utf-8")
+            gyroscope_str = zlib.decompress(gyroscope_csv.read(), 16+zlib.MAX_WBITS).decode("utf-8") if gyroscope_csv else None
             magnetometer_csv = request.FILES.get("magnetometer.csv.gz", None)
-            magnetometer_str = zlib.decompress(magnetometer_csv.read(), 16+zlib.MAX_WBITS).decode("utf-8")
+            magnetometer_str = zlib.decompress(magnetometer_csv.read(), 16+zlib.MAX_WBITS).decode("utf-8") if magnetometer_csv else None
         except Exception as e:
             print(e)
             return HttpResponseBadRequest(json.dumps({"error": "Invalid request."}))
