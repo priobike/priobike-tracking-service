@@ -1,3 +1,4 @@
+from typing import List
 from answers.models import Answer
 from django.conf import settings
 from django.db.models import Count, Sum
@@ -6,6 +7,30 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
 from tracks.models import Track
+
+class BatteryConsumptionHistogram:
+    def __init__(self, min_energy_consumption_per_minute, max_energy_consumption_per_minute, number_of_buckets, is_android, is_dark, save_battery):
+        self.min_energy_consumption_per_minute = min_energy_consumption_per_minute
+        self.max_energy_consumption_per_minute = max_energy_consumption_per_minute
+        self.number_of_buckets = number_of_buckets
+        self.buckets = [0 for i in range(number_of_buckets)]
+        self.is_android = is_android
+        self.is_dark = is_dark
+        self.save_battery = save_battery
+        
+    def add_value(self, bucket_idx):
+        for i in range(bucket_idx, self.number_of_buckets):
+            self.buckets[i] += 1
+        
+    def get_metric_lines(self) -> List[str]:
+        lines = []
+        for i in range(self.number_of_buckets):
+            if i == self.number_of_buckets - 1:
+                lines.append(f'battery_consumption_bucket{{os="{"Android" if self.is_android else "iOS"}", is_dark="{self.is_dark}", save_battery="{self.save_battery}", le="+Inf"}} {self.buckets[i]}')
+            else:
+                lines.append(f'battery_consumption_bucket{{os="{"Android" if self.is_android else "iOS"}", is_dark="{self.is_dark}", save_battery="{self.save_battery}", le="{(i * 0.1) + 0.1}"}} {self.buckets[i]}')
+        return lines
+        
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -105,6 +130,66 @@ class GetMetricsResource(View):
         # Add the counts to the metrics.
         for rating, count in counts.items():
             metrics.append(f'n_ratings{{rating="{rating}"}} {count}')
+            
+        # Battery stats
+        max_energy_consumption_per_minute = 5 # in percent
+        min_energy_consumption_per_minute = 0 # in percent
+        number_of_buckets = 50
+        
+        le_histogram_android_is_dark_save_battery = BatteryConsumptionHistogram(min_energy_consumption_per_minute, max_energy_consumption_per_minute, number_of_buckets, True, True, True)
+        le_histogram_android_is_dark_no_save_battery = BatteryConsumptionHistogram(min_energy_consumption_per_minute, max_energy_consumption_per_minute, number_of_buckets, True, True, False)
+        le_histogram_android_no_dark_save_battery = BatteryConsumptionHistogram(min_energy_consumption_per_minute, max_energy_consumption_per_minute, number_of_buckets, True, False, True)
+        le_histogram_android_no_dark_no_save_battery = BatteryConsumptionHistogram(min_energy_consumption_per_minute, max_energy_consumption_per_minute, number_of_buckets, True, False, False)
+        le_histogram_ios_is_dark_save_battery = BatteryConsumptionHistogram(min_energy_consumption_per_minute, max_energy_consumption_per_minute, number_of_buckets, False, True, True)
+        le_histogram_ios_is_dark_no_save_battery = BatteryConsumptionHistogram(min_energy_consumption_per_minute, max_energy_consumption_per_minute, number_of_buckets, False, True, False)
+        le_histogram_ios_no_dark_save_battery = BatteryConsumptionHistogram(min_energy_consumption_per_minute, max_energy_consumption_per_minute, number_of_buckets, False, False, True)
+        le_histogram_ios_no_dark_no_save_battery = BatteryConsumptionHistogram(min_energy_consumption_per_minute, max_energy_consumption_per_minute, number_of_buckets, False, False, False)
+        
+        for track in Track.objects.all():
+            if "batteryStates" not in track.metadata or len(track.metadata["batteryStates"]) < 2:
+                continue
+            if "isDarkMode" not in track.metadata:
+                continue
+            if "saveBatteryModeEnabled" not in track.metadata:
+                continue
+            
+            is_android = "Android" in track.device_type
+            is_dark_mode = track.metadata["isDarkMode"]
+            save_battery_mode_enabled = track.metadata["saveBatteryModeEnabled"]
+            
+            total_battery_consumption = track.metadata["batteryStates"][-1]["level"] - track.metadata["batteryStates"][0]["level"]
+            total_milliseconds = track.metadata["batteryStates"][-1]["timestamp"] - track.metadata["batteryStates"][0]["timestamp"] 
+            total_minutes = total_milliseconds / 1000 / 60
+            consumption_per_minute = total_battery_consumption / total_minutes
+            bucket_idx = int((consumption_per_minute - min_energy_consumption_per_minute) / (max_energy_consumption_per_minute - min_energy_consumption_per_minute) * number_of_buckets)
+            if bucket_idx > number_of_buckets - 1:
+                bucket_idx = number_of_buckets - 1
+                
+            if is_android and is_dark_mode and save_battery_mode_enabled:
+                le_histogram_android_is_dark_save_battery.add_value(bucket_idx)
+            elif is_android and is_dark_mode and not save_battery_mode_enabled:
+                le_histogram_android_is_dark_no_save_battery.add_value(bucket_idx)
+            elif is_android and not is_dark_mode and save_battery_mode_enabled:
+                le_histogram_android_no_dark_save_battery.add_value(bucket_idx)
+            elif is_android and not is_dark_mode and not save_battery_mode_enabled:
+                le_histogram_android_no_dark_no_save_battery.add_value(bucket_idx)
+            elif not is_android and is_dark_mode and save_battery_mode_enabled:
+                le_histogram_ios_is_dark_save_battery.add_value(bucket_idx)
+            elif not is_android and is_dark_mode and not save_battery_mode_enabled:
+                le_histogram_ios_is_dark_no_save_battery.add_value(bucket_idx)
+            elif not is_android and not is_dark_mode and save_battery_mode_enabled:
+                le_histogram_ios_no_dark_save_battery.add_value(bucket_idx)
+            elif not is_android and not is_dark_mode and not save_battery_mode_enabled:
+                le_histogram_ios_no_dark_no_save_battery.add_value(bucket_idx)
+                
+        content.extend(le_histogram_android_is_dark_save_battery.get_metric_lines())
+        content.extend(le_histogram_android_is_dark_no_save_battery.get_metric_lines())
+        content.extend(le_histogram_android_no_dark_save_battery.get_metric_lines())
+        content.extend(le_histogram_android_no_dark_no_save_battery.get_metric_lines())
+        content.extend(le_histogram_ios_is_dark_save_battery.get_metric_lines())
+        content.extend(le_histogram_ios_is_dark_no_save_battery.get_metric_lines())
+        content.extend(le_histogram_ios_no_dark_save_battery.get_metric_lines())
+        content.extend(le_histogram_ios_no_dark_no_save_battery.get_metric_lines())
 
         content = '\n'.join(metrics) + '\n'
         return HttpResponse(content, content_type='text/plain')
