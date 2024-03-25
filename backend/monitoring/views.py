@@ -9,9 +9,7 @@ from django.views.generic import View
 from tracks.models import Track
 
 class BatteryConsumptionHistogram:
-    def __init__(self, min_energy_consumption_per_minute, max_energy_consumption_per_minute, number_of_buckets, is_android, is_dark, save_battery):
-        self.min_energy_consumption_per_minute = min_energy_consumption_per_minute
-        self.max_energy_consumption_per_minute = max_energy_consumption_per_minute
+    def __init__(self, number_of_buckets, is_android, is_dark, save_battery):
         self.number_of_buckets = number_of_buckets
         self.buckets = [0 for i in range(number_of_buckets)]
         self.is_android = is_android
@@ -43,7 +41,7 @@ class GetMetricsResource(View):
         api_key = request.GET.get("api_key", None)
         if not api_key or api_key != settings.API_KEY:
             return HttpResponseBadRequest()
-
+    
         metrics = []
 
         # Add debug tracks to n_tracks.
@@ -64,11 +62,11 @@ class GetMetricsResource(View):
         sum_of_starts = tracks_with_end_time_debug.aggregate(v=Sum('start_time'))['v'] or 0
         sum_of_ends = tracks_with_end_time_debug.aggregate(v=Sum('end_time'))['v'] or 0
         metrics.append(f'n_seconds_riding{{debug=\"true\"}} {(sum_of_ends - sum_of_starts) // 1000}')
-        
+
         # Use an aggregate to sum up the duration of all valid tracks.
         sum_of_starts = tracks_with_end_time.aggregate(v=Sum('start_time'))['v'] or 0
         sum_of_ends = tracks_with_end_time.aggregate(v=Sum('end_time'))['v'] or 0
-        
+
         metrics.append(f'n_seconds_riding{{debug=\"false\"}} {(sum_of_ends - sum_of_starts) // 1000}')
 
         # Calculate the number of unique users.
@@ -122,7 +120,7 @@ class GetMetricsResource(View):
             .filter(question_text="Dein Feedback zur App") \
             .order_by("user_id", "-date") \
             .distinct("user_id")
-        
+
         # Count in Python
         counts = {}
         for rating in most_recent_ratings:
