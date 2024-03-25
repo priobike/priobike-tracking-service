@@ -155,7 +155,7 @@ class GetMetricsResource(View):
             is_dark_mode = track.metadata["isDarkMode"]
             save_battery_mode_enabled = track.metadata["saveBatteryModeEnabled"]
             
-            total_battery_consumption = track.metadata["batteryStates"][-1]["level"] - track.metadata["batteryStates"][0]["level"]
+            total_battery_consumption = track.metadata["batteryStates"][0]["level"] - track.metadata["batteryStates"][-1]["level"]
             total_milliseconds = track.metadata["batteryStates"][-1]["timestamp"] - track.metadata["batteryStates"][0]["timestamp"] 
             total_minutes = total_milliseconds / 1000 / 60
             consumption_per_minute = total_battery_consumption / total_minutes
