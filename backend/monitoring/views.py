@@ -27,7 +27,20 @@ class BatteryConsumptionHistogram:
                 lines.append(f'battery_consumption_bucket{{os="{"Android" if self.is_android else "iOS"}", is_dark="{self.is_dark}", save_battery="{self.save_battery}", le="+Inf"}} {self.buckets[i]}')
             else:
                 lines.append(f'battery_consumption_bucket{{os="{"Android" if self.is_android else "iOS"}", is_dark="{self.is_dark}", save_battery="{self.save_battery}", le="%.2f"}} {self.buckets[i]}'  % ((i * 0.1) + 0.1) )
+
+        lines.append(f'battery_consumption_sum{{os="{"Android" if self.is_android else "iOS"}", is_dark="{self.is_dark}", save_battery="{self.save_battery}"}} {self.get_total()}')
+        lines.append(f'battery_consumption_count{{os="{"Android" if self.is_android else "iOS"}", is_dark="{self.is_dark}", save_battery="{self.save_battery}"}} {self.get_count()}')
+
         return lines
+    
+    def get_total(self) -> int:
+        total = 0
+        for (i, value) in enumerate(self.buckets):
+            total += value * ((i * 0.1) + 0.1)
+        return total
+    
+    def get_count(self) -> int:
+        return sum(self.buckets)
         
 
 
