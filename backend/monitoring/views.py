@@ -35,12 +35,15 @@ class BatteryConsumptionHistogram:
     
     def get_total(self) -> int:
         total = 0
+        last_value = 0
         for (i, value) in enumerate(self.buckets):
-            total += value * ((i * 0.1) + 0.1)
+            if value != last_value:
+                total += (value - last_value) * ((i * 0.1) + 0.1)
+                last_value = value
         return total
     
     def get_count(self) -> int:
-        return sum(self.buckets)
+        return self.buckets[-1]
         
 
 
