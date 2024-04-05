@@ -158,8 +158,8 @@ class GetMetricsResource(View):
                 track.can_battery_analysis = True
             track.save()
         
-        # Migrate tracks that can be used for battery analysis and add average battery consumption.
-        for track in Track.objects.filter(can_battery_analysis=True):
+        # Migrate tracks that can be used for battery analysis and add average battery consumption if not set yet.
+        for track in Track.objects.filter(can_battery_analysis=True, avg_battery_consumption=None):
             total_battery_consumption = track.metadata["batteryStates"][0]["level"] - track.metadata["batteryStates"][-1]["level"]
             total_milliseconds = track.metadata["batteryStates"][-1]["timestamp"] - track.metadata["batteryStates"][0]["timestamp"] 
             total_minutes = total_milliseconds / 1000 / 60
