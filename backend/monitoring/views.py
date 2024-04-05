@@ -176,7 +176,7 @@ class GetMetricsResource(View):
         le_histogram_ios_no_dark_no_save_battery = BatteryConsumptionHistogram(number_of_buckets, False, False, False)
 
         # get all values for tracks with can battery analysis.
-        for track in Track.objects.filter(has_battery_data=True).values_list(avg_battery_consumption=True, metadata=True, device_type=True):
+        for track in Track.objects.filter(has_battery_data=True).values("device_type", "metadata", "avg_battery_consumption"):
             if "isDarkMode" not in track.metadata:
                 continue
             if "saveBatteryModeEnabled" not in track.metadata:
