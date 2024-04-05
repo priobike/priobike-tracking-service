@@ -150,6 +150,22 @@ class GetMetricsResource(View):
         min_energy_consumption_per_minute = 0 # in percent
         number_of_buckets = 50
 
+        # Migrate tracks that can be used for battery analysis.
+        for track in Track.objects.filter(can_battery_analysis=None):
+            if "batteryStates" not in track.metadata or len(track.metadata["batteryStates"]) < 2:
+                track.can_battery_analysis = False
+            else:
+                track.can_battery_analysis = True
+            track.save()
+        
+        # Migrate tracks that can be used for battery analysis and add average battery consumption.
+        for track in Track.objects.filter(can_battery_analysis=True):
+            total_battery_consumption = track.metadata["batteryStates"][0]["level"] - track.metadata["batteryStates"][-1]["level"]
+            total_milliseconds = track.metadata["batteryStates"][-1]["timestamp"] - track.metadata["batteryStates"][0]["timestamp"] 
+            total_minutes = total_milliseconds / 1000 / 60
+            track.avg_battery_consumption = total_battery_consumption / total_minutes
+            track.save()
+
         le_histogram_android_is_dark_save_battery = BatteryConsumptionHistogram(number_of_buckets, True, True, True)
         le_histogram_android_is_dark_no_save_battery = BatteryConsumptionHistogram(number_of_buckets, True, True, False)
         le_histogram_android_no_dark_save_battery = BatteryConsumptionHistogram(number_of_buckets, True, False, True)
@@ -159,9 +175,8 @@ class GetMetricsResource(View):
         le_histogram_ios_no_dark_save_battery = BatteryConsumptionHistogram(number_of_buckets, False, False, True)
         le_histogram_ios_no_dark_no_save_battery = BatteryConsumptionHistogram(number_of_buckets, False, False, False)
 
-        for track in Track.objects.all():
-            if "batteryStates" not in track.metadata or len(track.metadata["batteryStates"]) < 2:
-                continue
+        # get all values for tracks with can battery analysis.
+        for track in Track.objects.filter(can_battery_analysis=True).values_list(avg_battery_consumption=True, metadata=True, device_type=True):
             if "isDarkMode" not in track.metadata:
                 continue
             if "saveBatteryModeEnabled" not in track.metadata:
@@ -171,11 +186,7 @@ class GetMetricsResource(View):
             is_dark_mode = track.metadata["isDarkMode"]
             save_battery_mode_enabled = track.metadata["saveBatteryModeEnabled"]
             
-            total_battery_consumption = track.metadata["batteryStates"][0]["level"] - track.metadata["batteryStates"][-1]["level"]
-            total_milliseconds = track.metadata["batteryStates"][-1]["timestamp"] - track.metadata["batteryStates"][0]["timestamp"] 
-            total_minutes = total_milliseconds / 1000 / 60
-            consumption_per_minute = total_battery_consumption / total_minutes
-            bucket_idx = int((consumption_per_minute - min_energy_consumption_per_minute) / (max_energy_consumption_per_minute - min_energy_consumption_per_minute) * number_of_buckets)
+            bucket_idx = int((track.avg_battery_consumption - min_energy_consumption_per_minute) / (max_energy_consumption_per_minute - min_energy_consumption_per_minute) * number_of_buckets)
             if bucket_idx > number_of_buckets - 1:
                 bucket_idx = number_of_buckets - 1
                 
