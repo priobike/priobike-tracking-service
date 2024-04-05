@@ -48,7 +48,7 @@ class PostTrackResource(View):
                 bike_type=metadata.get("bikeType", "unknown") if metadata.get("bikeType", "unknown") != None else "unknown",
                 preference_type=metadata.get("preferenceType", "unknown") if metadata.get("preferenceType", "unknown") != None else "unknown",
                 activity_type=metadata.get("activityType", "unknown") if metadata.get("activityType", "unknown") != None else "unknown",
-                can_battery_analysis = metadata.get("batteryStates") != None and len(metadata.get("batteryStates")) >= 2,
+                has_battery_data = metadata.get("batteryStates") != None and len(metadata.get("batteryStates")) >= 2,
                 # Fields that contain raw data.
                 metadata=metadata,
                 gps_csv=gps_str,

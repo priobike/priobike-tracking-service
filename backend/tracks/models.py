@@ -51,7 +51,7 @@ class Track(models.Model):
     activity_type = models.CharField(max_length=255, default='unknown')
 
     # Whether the track is able to be analyzed for battery consumption.
-    can_battery_analysis = models.BooleanField(blank=True, null=True)
+    has_battery_data = models.BooleanField(blank=True, null=True)
 
     # The average battery consumption of the track.
     avg_battery_consumption = models.FloatField(blank=True, null=True)
