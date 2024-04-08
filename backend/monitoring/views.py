@@ -177,16 +177,16 @@ class GetMetricsResource(View):
 
         # get all values for tracks with can battery analysis.
         for track in Track.objects.filter(has_battery_data=True).values("device_type", "metadata", "avg_battery_consumption"):
-            if "isDarkMode" not in track.metadata:
+            if "isDarkMode" not in track["metadata"]:
                 continue
-            if "saveBatteryModeEnabled" not in track.metadata:
+            if "saveBatteryModeEnabled" not in track["metadata"]:
                 continue
             
-            is_android = "Android" in track.device_type
-            is_dark_mode = track.metadata["isDarkMode"]
-            save_battery_mode_enabled = track.metadata["saveBatteryModeEnabled"]
+            is_android = "Android" in track["device_type"]
+            is_dark_mode = track["metadata"]["isDarkMode"]
+            save_battery_mode_enabled = track["metadata"]["saveBatteryModeEnabled"]
             
-            bucket_idx = int((track.avg_battery_consumption - min_energy_consumption_per_minute) / (max_energy_consumption_per_minute - min_energy_consumption_per_minute) * number_of_buckets)
+            bucket_idx = int((track["avg_battery_consumption"] - min_energy_consumption_per_minute) / (max_energy_consumption_per_minute - min_energy_consumption_per_minute) * number_of_buckets)
             if bucket_idx > number_of_buckets - 1:
                 bucket_idx = number_of_buckets - 1
                 
