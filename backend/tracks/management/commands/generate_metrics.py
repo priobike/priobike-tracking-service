@@ -126,7 +126,18 @@ class Command(BaseCommand):
         # Count the distribution of in-app ratings.
         # Only get the most recent rating for each user (user_id field)
         # and only count the ratings for the "Dein Feedback zur App" question.
-        
+        most_recent_ratings = Answer.objects \
+            .filter(question_text="Dein Feedback zur App") \
+            .order_by("user_id", "-date") \
+            .distinct("user_id")
+
+        # Count in Python
+        counts = {}
+        for rating in most_recent_ratings:
+            counts[rating.value] = counts.get(rating.value, 0) + 1
+        # Add the counts to the metrics.
+        for rating, count in counts.items():
+            metrics.append(f'n_ratings{{rating="{rating}"}} {count}')
             
         # Battery stats
         max_energy_consumption_per_minute = 5 # in percent
@@ -202,7 +213,7 @@ class Command(BaseCommand):
         content = '\n'.join(metrics) + '\n'
         
         # store the file under ./backend/static/metrics.txt
-        with open('./backend/static/metrics.txt', 'w') as f:
+        with open('./backend/data/metrics.txt', 'w') as f:
             f.write(content)
         
         print(f"Finished generation of track metrics.")

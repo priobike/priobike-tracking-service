@@ -24,6 +24,7 @@ services:
     container_name: backend
     volumes:
       - tracking_service_staticfiles:/code/backend/static/
+      - tracking_service_data:/code/backend/data/
       - .:/code # Only for development
     networks:
       - production-network
@@ -86,3 +87,5 @@ volumes:
   pg_log:
 
   tracking_service_staticfiles:
+
+  tracking_service_data:
