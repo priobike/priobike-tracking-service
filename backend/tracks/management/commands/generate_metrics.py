@@ -1,12 +1,9 @@
 from typing import List
-from answers.models import Answer
-from django.conf import settings
 from django.db.models import Count, Sum
-from django.http import HttpResponse, HttpResponseBadRequest
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import View
 from tracks.models import Track
+from django.core.management.base import BaseCommand
+from tracks.models import Track
+from answers.models import Answer
 
 class BatteryConsumptionHistogram:
     def __init__(self, number_of_buckets, is_android, is_dark, save_battery):
@@ -44,19 +41,16 @@ class BatteryConsumptionHistogram:
     
     def get_count(self) -> int:
         return self.buckets[-1]
+
+class Command(BaseCommand):
+    help = """ Creates the metrics for the tracks after the data has been cleaned up."""
+
+    def handle(self, *args, **options):
+        print(f"Starting scheduled generation of metrics of tracks.")
         
-
-
-@method_decorator(csrf_exempt, name='dispatch')
-class GetMetricsResource(View):
-    def get(self, request):
         """
         Generate Prometheus metrics as a text file and return it.
         """
-        # Only allow access with a valid api key.
-        api_key = request.GET.get("api_key", None)
-        if not api_key or api_key != settings.API_KEY:
-            return HttpResponseBadRequest()
     
         metrics = []
 
@@ -132,18 +126,7 @@ class GetMetricsResource(View):
         # Count the distribution of in-app ratings.
         # Only get the most recent rating for each user (user_id field)
         # and only count the ratings for the "Dein Feedback zur App" question.
-        most_recent_ratings = Answer.objects \
-            .filter(question_text="Dein Feedback zur App") \
-            .order_by("user_id", "-date") \
-            .distinct("user_id")
-
-        # Count in Python
-        counts = {}
-        for rating in most_recent_ratings:
-            counts[rating.value] = counts.get(rating.value, 0) + 1
-        # Add the counts to the metrics.
-        for rating, count in counts.items():
-            metrics.append(f'n_ratings{{rating="{rating}"}} {count}')
+        
             
         # Battery stats
         max_energy_consumption_per_minute = 5 # in percent
@@ -175,8 +158,8 @@ class GetMetricsResource(View):
         le_histogram_ios_no_dark_save_battery = BatteryConsumptionHistogram(number_of_buckets, False, False, True)
         le_histogram_ios_no_dark_no_save_battery = BatteryConsumptionHistogram(number_of_buckets, False, False, False)
 
-        # get all values for tracks with can battery analysis and debug.
-        for track in Track.objects.filter(has_battery_data=True, debug=False).values("device_type", "metadata", "avg_battery_consumption"):
+        # get all values for tracks with can battery analysis.
+        for track in Track.objects.filter(has_battery_data=True).values("device_type", "metadata", "avg_battery_consumption"):
             if "isDarkMode" not in track["metadata"]:
                 continue
             if "saveBatteryModeEnabled" not in track["metadata"]:
@@ -217,5 +200,9 @@ class GetMetricsResource(View):
         metrics.extend(le_histogram_ios_no_dark_no_save_battery.get_metric_lines())
 
         content = '\n'.join(metrics) + '\n'
-        return HttpResponse(content, content_type='text/plain')
         
+        # store the file under ./backend/static/metrics.txt
+        with open('./backend/static/metrics.txt', 'w') as f:
+            f.write(content)
+        
+        print(f"Finished generation of track metrics.")
