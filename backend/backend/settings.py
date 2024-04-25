@@ -46,20 +46,6 @@ else:
 # SECURITY WARNING: keep the API key used in production secret!
 API_KEY = os.environ.get('API_KEY', 'secret')
 
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-        },
-    },
-    "root": {
-        "handlers": ["console"],
-        "level": "WARNING",
-    },
-}
-
 # Application definition
 
 INSTALLED_APPS = [

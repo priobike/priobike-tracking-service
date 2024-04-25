@@ -4,6 +4,7 @@ from tracks.models import Track
 from django.core.management.base import BaseCommand
 from tracks.models import Track
 from answers.models import Answer
+from django.conf import settings
 
 class BatteryConsumptionHistogram:
     def __init__(self, number_of_buckets, is_android, is_dark, save_battery):
@@ -213,7 +214,7 @@ class Command(BaseCommand):
         content = '\n'.join(metrics) + '\n'
         
         # store the file under ./backend/static/metrics.txt
-        with open('./backend/data/metrics.txt', 'w') as f:
+        with open(str(settings.BASE_DIR) + '/data/metrics.txt', 'w') as f:
             f.write(content)
         
         print(f"Finished generation of track metrics.")
