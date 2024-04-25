@@ -13,6 +13,7 @@ class GetMetricsResource(View):
         # Only allow access with a valid api key.
         api_key = request.GET.get("api_key", None)
         if not api_key or api_key != settings.API_KEY:
+            print("API key is missing or invalid.")
             return HttpResponseBadRequest()
         
         # Get metrics.txt from data folder.
