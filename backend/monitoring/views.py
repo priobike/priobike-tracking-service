@@ -3,6 +3,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
+from os import listdir
 
 @method_decorator(csrf_exempt, name='dispatch')
 class GetMetricsResource(View):
@@ -11,6 +12,7 @@ class GetMetricsResource(View):
         Generate Prometheus metrics as a text file and return it.
         """
         print("GET /monitoring/metrics")
+        print(listdir("./"))
         # Only allow access with a valid api key.
         api_key = request.GET.get("api_key", None)
         if not api_key or api_key != settings.API_KEY:
