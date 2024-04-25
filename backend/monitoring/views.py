@@ -10,6 +10,7 @@ class GetMetricsResource(View):
         """
         Generate Prometheus metrics as a text file and return it.
         """
+        print("GET /monitoring/metrics")
         # Only allow access with a valid api key.
         api_key = request.GET.get("api_key", None)
         if not api_key or api_key != settings.API_KEY:
