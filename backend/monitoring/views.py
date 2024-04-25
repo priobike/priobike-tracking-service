@@ -24,7 +24,6 @@ class GetMetricsResource(View):
             return HttpResponseBadRequest()
 
         if metrics:
-            content = '\n'.join(metrics) + '\n'
-            return HttpResponse(content, content_type='text/plain')
+            return HttpResponse(metrics, content_type='text/plain')
         else:
             return HttpResponseBadRequest()
