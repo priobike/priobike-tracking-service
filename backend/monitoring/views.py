@@ -21,9 +21,9 @@ class GetMetricsResource(View):
             with open('./backend/data/metrics.txt', 'r') as file:
                 metrics = file.readlines()
         except:
+            print("Error reading metrics.txt")
             return HttpResponseBadRequest()
 
-        if metrics:
-            return HttpResponse(metrics, content_type='text/plain')
-        else:
-            return HttpResponseBadRequest()
+        # Return metrics as text file.
+        return HttpResponse(metrics, content_type='text/plain')
+       
