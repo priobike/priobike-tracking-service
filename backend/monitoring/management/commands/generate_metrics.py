@@ -1,3 +1,5 @@
+import json
+from time import time
 from typing import List
 from django.db.models import Count, Sum
 from tracks.models import Track
@@ -210,10 +212,22 @@ class Command(BaseCommand):
         metrics.extend(le_histogram_ios_is_dark_no_save_battery.get_metric_lines())
         metrics.extend(le_histogram_ios_no_dark_save_battery.get_metric_lines())
         metrics.extend(le_histogram_ios_no_dark_no_save_battery.get_metric_lines())
+        
+        # Backup metrics
+        try:
+            with open(str(settings.BASE_DIR) + '/data/backup_metrics.json', 'r') as file:
+                backup_metrics = json.load(file)
+        except FileNotFoundError:
+            backup_metrics = None
+            
+        if backup_metrics is not None:
+            now = int(time())
+            backup_diff = now - backup_metrics["timestamp"]
+            metrics.append(f'backup_track_count {backup_metrics["backup_track_count"]}')
+            metrics.append(f'backup_last_reported_seconds_ago {backup_diff}')
 
         content = '\n'.join(metrics) + '\n'
         
-        # store the file under ./backend/static/metrics.txt
         with open(str(settings.BASE_DIR) + '/data/metrics.txt', 'w') as f:
             f.write(content)
         
