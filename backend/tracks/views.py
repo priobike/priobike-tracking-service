@@ -1,14 +1,61 @@
 import json
 import zlib
+from io import StringIO
 
+import pandas as pd
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.http import HttpResponseBadRequest, JsonResponse, HttpResponseServerError
+from django.db.utils import IntegrityError
+from django.http import (HttpResponseBadRequest, HttpResponseServerError,
+                         JsonResponse)
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
 from tracks.models import Track
+
+
+def validate_track(track):
+    if track.debug:
+        return "Track is in debug mode."
+    if track.positioning_mode != "gnss":
+        return "Track is created using mock position mode."
+    
+    track_gps_data = pd.read_csv(StringIO(track.gps_csv), sep=",")
+    
+    if len(track_gps_data.index) < 6:
+        return "Track is too short."
+    
+    if track.backend == 'staging':
+        # Bounding box Dresden 
+        min_lat, max_lat = 50.8, 51.3
+        min_lon, max_lon = 13.2, 14.3
+    elif track.backend == 'production':
+        # Bounds for Hamburg
+        min_lat, max_lat = 53.1, 54.0
+        min_lon, max_lon = 9.1, 10.9
+    elif track.backend == 'release':
+        # Bounds for Hamburg
+        min_lat, max_lat = 53.1, 54.0
+        min_lon, max_lon = 9.1, 10.9
+    else:
+        return "Track is not from a valid backend."
+    
+    # Get the maximum and minimum latitude and longitude values of the track.
+    try:
+        track_max_lat = track_gps_data['latitude'].max()
+        track_min_lat = track_gps_data['latitude'].min()
+        track_max_lon = track_gps_data['longitude'].max()
+        track_min_lon = track_gps_data['longitude'].min()
+    except KeyError as e:
+        print(f"Track with id {track.session_id} has no latitude or longitude column (in GPS data).")
+        return
+    
+    # Check if the track is fully within the bounding box of the city.
+    if track_max_lat > max_lat or track_min_lat < min_lat or track_max_lon > max_lon or track_min_lon < min_lon:
+        return "Track is out of bounding box of the city."
+    
+    return None
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -35,7 +82,7 @@ class PostTrackResource(View):
             return HttpResponseBadRequest(json.dumps({"error": "Invalid request."}))
 
         try:
-            Track.objects.create(
+            track = Track(
                 # Fields that are extracted from the raw json data for querying.
                 start_time=metadata.get("startTime", None),
                 end_time=metadata.get("endTime", None),
@@ -56,11 +103,19 @@ class PostTrackResource(View):
                 gyroscope_csv=gyroscope_str,
                 magnetometer_csv=magnetometer_str,
             )
+            err = validate_track(track)
+            if not err:
+                track.save()
+            else:
+                # Log but don't tell the client to not leak validation information.
+                print(f"Track with id {track.session_id} won't be inserted into the DB: {err}")
         except (ValidationError, KeyError) as e:
             print(e)
             return HttpResponseBadRequest(json.dumps({"error": "Invalid request."}))
+        except IntegrityError as e:
+            return HttpResponseBadRequest(json.dumps({"error": "Track already exists."}))
         except Exception as e:
-            print(e)
+            print(e, type(e))
             return HttpResponseServerError(json.dumps({"error": "Unknown error."}))
         
         return JsonResponse({"success": True})

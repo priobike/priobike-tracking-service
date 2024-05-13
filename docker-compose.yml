@@ -1,91 +1,75 @@
+version: '3'
+
 networks:
-  production-network:
-    name: production-network
+  test-network:
+    name: test-network
 
 services:
-  db:
-    image: postgis/postgis:14-3.3
-    container_name: postgres
-    hostname: db
+  manager:
     networks:
-      - production-network
-    env_file:
-      - dev.env
+      - test-network
+    build: .
     volumes:
+      # Listen to code changes
+      - ./:/code
+      # Persist Psql data
       - pg_conf:/etc/postgresql
       - pg_log:/var/log/postgresql
       - pg_data:/var/lib/postgresql/data
-    # Log all statements
-    # See: https://postgresqlco.nf/doc/en/param/log_statement/
-    command: ["postgres", "-c", "log_statement=all", "-c", "log_destination=stderr"]
-    restart: unless-stopped
-
-  backend:
-    container_name: backend
-    volumes:
-      - tracking_service_staticfiles:/code/backend/static/
+      # Backup metrics are persisted here:
       - tracking_service_data:/code/backend/data/
-      - .:/code # Only for development
+    environment:
+      - DJANGO_SUPERUSER_PASSWORD=secret
+      - DJANGO_DEBUG_MODE=True
+      - FCM_PUSH_NOTIFICATION_ENVIRONMENT=dev
+      - WORKER_HOST=worker
+      - SYNC_KEY=secret
+    ports:
+      - "8000:8000"
+    command: ./run-dev.sh
+    restart: unless-stopped
+
+  worker:
+    hostname: worker{{.Task.Slot}}.local
     networks:
-      - production-network
+      - test-network
     build: .
-    env_file:
-      - dev.env
-    depends_on:
-      - db
-    ports:
-      - "8000:8000" # HTTP (only for development)
+    volumes:
+      - ./:/code
+    environment:
+      - DJANGO_DEBUG_MODE=True
+      - WORKER_MODE=True
+      - SYNC_KEY=secret
+    command: ./run-dev.sh
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.worker.rule=PathPrefix(`/`)
+      - traefik.http.routers.worker.entryPoints=web
+      - traefik.http.services.worker.loadbalancer.server.port=8000
+    deploy:
+      mode: replicated
+      endpoint_mode: dnsrr
+      replicas: 2
+
+  traefik:
+    image: traefik:v2.9
+    hostname: traefik
+    networks:
+      - test-network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports: 
+      - "80:80"
+      - "8080:8080"
     command:
-      - /bin/bash
-      - -c
-      - |
-        ./wait-for-postgres.sh
-        poetry run python backend/manage.py migrate
-        poetry run python backend/manage.py collectstatic --no-input
-        poetry run python backend/manage.py createsuperuser --noinput
-        poetry run python backend/manage.py runserver 0.0.0.0:8000
-    restart: unless-stopped
-
-  nginx_inner:
-    image: nginx:1.21.6
-    container_name: nginx_inner
-    hostname: nginx_inner
-    volumes:
-      - ./nginx_inner/conf.d:/etc/nginx/conf.d
-      - ./nginx_inner/proxy_params:/etc/nginx/proxy_params
-      # The static files for the tracking service
-      - tracking_service_staticfiles:/tracking-service/backend/static/
-    networks:
-      - production-network
-    depends_on:
-      - db
-      - backend
-    restart: unless-stopped
-
-  nginx_outer:
-    image: nginx:1.21.6
-    container_name: nginx_outer
-    hostname: nginx_outer
-    volumes:
-      - ./nginx_outer/conf.d:/etc/nginx/conf.d
-      - ./nginx_outer/proxy_params:/etc/nginx/proxy_params
-    # The NGINX proxy service is the only service that listens to the outside world
-    ports:
-      # This is important for the root NGINX proxy of the server.
-      - "80:80" # HTTP
-    networks:
-      - production-network
-    depends_on:
-      - db
-      - backend
-      - nginx_inner
-    restart: unless-stopped
+      - --providers.docker
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=test-network
+      - --entryPoints.web.address=:80
 
 volumes:
   pg_data:
   pg_conf:
   pg_log:
-
-  tracking_service_staticfiles:
-
   tracking_service_data:
