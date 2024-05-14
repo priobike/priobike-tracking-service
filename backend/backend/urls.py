@@ -22,7 +22,6 @@ from backend.views import HealthcheckView, StatusView
 urlpatterns = [
     path('tracks/', include('tracks.urls')),
     path('answers/', include('answers.urls')),
-    path('monitoring/', include('monitoring.urls')),
     path('sync/', include('sync.urls')),
     path('status', StatusView.as_view(), name='status'),
     path('healthcheck', HealthcheckView.as_view(), name='healthcheck'),
@@ -30,3 +29,4 @@ urlpatterns = [
 
 if not settings.WORKER_MODE:
     urlpatterns.append(path(settings.ADMIN_URL, admin.site.urls))
+    urlpatterns.append(path('monitoring/', include('monitoring.urls')))
