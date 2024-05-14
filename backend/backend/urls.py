@@ -22,10 +22,12 @@ from backend.views import HealthcheckView, StatusView
 urlpatterns = [
     path('tracks/', include('tracks.urls')),
     path('answers/', include('answers.urls')),
-    path('sync/', include('sync.urls')),
     path('status', StatusView.as_view(), name='status'),
     path('healthcheck', HealthcheckView.as_view(), name='healthcheck'),
 ]
+
+if settings.SYNC_EXPOSED:
+    urlpatterns.append(path('sync/', include('sync.urls')))
 
 if not settings.WORKER_MODE:
     urlpatterns.append(path(settings.ADMIN_URL, admin.site.urls))
