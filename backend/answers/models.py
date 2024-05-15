@@ -5,6 +5,11 @@ from django.utils import timezone
 class Answer(models.Model):
     """An answer to a feedback question."""
 
+    # The id of the session, if provided.
+    # We use the session id as a primary key and not the Django-internal
+    # primary key to avoid that duplicate answers are loaded from fixtures.
+    session_id = models.CharField(max_length=255, default='unknown', primary_key=True)
+
     # The id of the user.
     user_id = models.TextField(max_length=100)
 
@@ -14,9 +19,6 @@ class Answer(models.Model):
     # The base 64 encoded image of this question, if provided.
     # Max size: 10MB (10M symbols in base 64).
     question_image = models.TextField(null=True, blank=True, max_length=10_000_000)
-
-    # The id of the session, if provided.
-    session_id = models.TextField(null=True, blank=True, max_length=100)
 
     # The value of the answer, if provided. Max length: 1000 symbols.
     # This can be:

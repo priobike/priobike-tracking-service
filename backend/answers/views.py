@@ -18,6 +18,12 @@ class PostAnswerResource(View):
         except json.JSONDecodeError:
             return HttpResponseBadRequest(json.dumps({"error": "Invalid request."}))
         
+        session_id = json_data.get("sessionId")
+        if not session_id:
+            return HttpResponseBadRequest(json.dumps({"error": "Missing session ID."}))
+        if Answer.objects.filter(session_id=session_id).exists():
+            return HttpResponseBadRequest(json.dumps({"error": "Session already exists."}))
+
         # Make some sanity checks on the requested data.
         try:
             Answer.objects.create(
@@ -26,7 +32,7 @@ class PostAnswerResource(View):
                 question_text=json_data["questionText"],
                 # Optional args
                 question_image=json_data.get("questionImage"),
-                session_id=json_data.get("sessionId"),
+                session_id=session_id,
                 value=json_data.get("value"),
             )
         except (ValidationError, KeyError):

@@ -11,7 +11,21 @@ class JSONField(models.TextField):
     def to_python(self, value):
         if not value: 
             return None
-        return json.loads(value)
+        # ---- Checks if the Django encoder was used to serialize the data.
+        # If the value is a single-quote string, replace it with a double-quote string.
+        if isinstance(value, str) and "'" in value:
+            value = value.replace("'", '"')
+        # Convert uppercase True and False to lowercase.
+        if isinstance(value, str):
+            value = value.replace("True", "true").replace("False", "false")
+        # ---- End of checks
+        try:
+            return json.loads(value)
+        except (TypeError, ValueError) as e:
+            # Print out a detailed error message.
+            print(f"Error: {e}")
+            print(f"Value: {value}")
+            raise
 
     def from_db_value(self, value, *args):
         return self.to_python(value)

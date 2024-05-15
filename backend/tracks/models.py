@@ -13,6 +13,11 @@ class Track(models.Model):
 
     ####### Fields that are extracted from the raw json data for querying. #######
 
+    # The session id.
+    # We use the session id as a primary key and not the Django-internal
+    # primary key to avoid that duplicate answers are loaded from fixtures.
+    session_id = models.CharField(max_length=255, default='unknown', primary_key=True)
+
     # The start time of the track in unix milliseconds since epoch.
     start_time = models.BigIntegerField()
 
@@ -31,9 +36,6 @@ class Track(models.Model):
 
     # The user id.
     user_id = models.CharField(max_length=255, default='unknown')
-
-    # The session id.
-    session_id = models.CharField(max_length=255, default='unknown')
 
     # The device model.
     device_type = models.CharField(max_length=255, default='unknown')

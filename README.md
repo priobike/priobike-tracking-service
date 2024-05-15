@@ -2,16 +2,22 @@
 
 A microservice to receive tracks and feedback from users.
 
+## Read this first
+
+To balance load we run this service in two instances:
+- The **worker** receives and checks tracks (can be scaled). Data stored in the worker DB can be lost at any time.
+- The **manager** fetches tracks from the worker, tells them to flush their DB once new tracks are finished, and exposes a download API for all tracks. This service should be persisted.
+
 ## Tracks - REST Endpoint
 
-### *GET* `/tracks/fetch/` - Get a single track with an API key.
+### MANAGER *GET* `/tracks/fetch/` - Get a single track with an API key.
 
 #### Response format
 
-Perform an example request with the example preset route:
+Get the contents of a specific track. This request is performed against the manager.
 
 ```
-curl "http://localhost:8000/tracks/fetch/?pk=1&key=secret"
+curl "http://localhost:8000/tracks/fetch/?pk=\[012345\]&key=secret"
 ```
 
 Example response:
@@ -27,11 +33,11 @@ Parameters:
 * `key` - The API key to use.
 * `pk` - The primary key of the track to get.
 
-### *GET* `/tracks/list/` - Get tracks with an API key.
+### MANAGER *GET* `/tracks/list/` - Get tracks with an API key.
 
 #### Response format
 
-Perform an example request with the example preset route:
+Get a list of tracks. This request is performed against the manager.
 
 ```
 curl "http://localhost:8000/tracks/list/?key=secret"
@@ -78,7 +84,7 @@ Parameters:
 * `page` - The page to get. Default: `1`.
 * `pageSize` - The page size to get. Default: `10`. Limited to `100`.
 
-### *POST* `/tracks/post/` - Post a new track.
+### WORKER *POST* `/tracks/post/` - Post a new track.
 
 #### Response format
 
@@ -91,7 +97,7 @@ curl -X POST \
     -F magnetometer.csv.gz='@example-magnetometer.csv.gz' \
     -F gyroscope.csv.gz='@example-gyroscope.csv.gz' \
     -F metadata.json.gz='@example-metadata.json.gz' \
-    http://localhost:8000/tracks/post/
+    http://localhost/tracks/post/
 ```
 
 Response:
@@ -106,7 +112,7 @@ If anything else happens, the server will respond with a response code other tha
 
 ## Feedback REST Endpoint
 
-### *POST* `/answers/post/` - Post a new answer.
+### WORKER *POST* `/answers/post/` - Post a new answer.
 
 #### Request format
 
@@ -133,10 +139,10 @@ However, there are more fields that can be passed:
 
 #### Response format
 
-Perform an example request with the example preset route:
+Perform an example POST request:
 
 ```
-curl --data "@example.json" http://localhost:8000/answers/post/
+curl --data "@example.json" http://localhost/answers/post/
 ```
 
 Response:
@@ -148,7 +154,3 @@ Response:
 ```
 
 If anything else happens, the server will respond with a response code other than 200.
-
-## Debug Setup
-
-To validate that everything works behind our reverse proxies, we provide a docker-compose setup with 2 NGINX proxies.
