@@ -157,6 +157,14 @@ class Command(BaseCommand):
         
         # Migrate tracks that can be used for battery analysis and add average battery consumption if not set yet.
         for track in Track.objects.filter(has_battery_data=True, avg_battery_consumption=None):
+            # Check if one battery state in battery states contains BatteryState.charging or BatteryState.full.
+            # Then this track is not usable for battery analysis.
+            if any("batteryState" in batteryState and (batteryState["batteryState"] == "BatteryState.charging" or batteryState["batteryState"] == "BatteryState.full") for batteryState in track.metadata["batteryStates"]):
+                # Set has_battery_data to False and continue with next track.
+                track.has_battery_data = False
+                track.save()
+                continue
+
             total_battery_consumption = track.metadata["batteryStates"][0]["level"] - track.metadata["batteryStates"][-1]["level"]
             total_milliseconds = track.metadata["batteryStates"][-1]["timestamp"] - track.metadata["batteryStates"][0]["timestamp"] 
             total_minutes = total_milliseconds / 1000 / 60

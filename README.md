@@ -154,3 +154,16 @@ Response:
 ```
 
 If anything else happens, the server will respond with a response code other than 200.
+
+## Generate Metrics for Prometheus
+
+Prometheus metrics are generated on every sync call if the track count has changed.
+
+### How to test metrics
+
+Metric generation can be tested by adding tracks. Therefore different ```example-metadata-x.json``` can be used.
+The metrics.txt is stored under ```/backend/data/``` and can be requested with: 
+
+```
+curl "http://localhost:8000/monitoring/metrics?api_key=secret"
+```
