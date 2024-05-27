@@ -167,3 +167,7 @@ The metrics.txt is stored under ```/backend/data/``` and can be requested with:
 ```
 curl "http://localhost:8000/monitoring/metrics?api_key=secret"
 ```
+
+#### Note
+The metric only contains tracks, that did not charge the battery during tracks. 
+The ```Track``` attribute ```has_battery_data``` is also false for tracks that did charge during the track.
