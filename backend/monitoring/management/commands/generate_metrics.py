@@ -228,7 +228,7 @@ class Command(BaseCommand):
         except:
             track_backup_metrics = None
         try:
-            with open(str(settings.BASE_DIR) + '/data/answer-backup-state.json.json', 'w') as file:
+            with open(str(settings.BASE_DIR) + '/data/answer-backup-state.json', 'w') as file:
                 answer_backup_metrics = json.load(file)
         except:
             answer_backup_metrics = None
