@@ -10,5 +10,6 @@ if settings.WORKER_MODE:
 else:
     urlpatterns = [
         path("metrics", views.GetMetricsResource.as_view(), name="get-metrics"),
-        path("backup", views.ReportBackupMetricsResource.as_view(), name="report-backup-metrics"),
+        path("backup/tracks", views.ReportTrackBackupMetricsResource.as_view(), name="report-track-backup-metrics"),
+        path("backup/answers", views.ReportAnswerBackupMetricsResource.as_view(), name="report-answer-backup-metrics"),
     ]

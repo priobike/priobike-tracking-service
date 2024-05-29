@@ -223,16 +223,22 @@ class Command(BaseCommand):
         
         # Backup metrics
         try:
-            with open(str(settings.BASE_DIR) + '/data/backup_metrics.json', 'r') as file:
-                backup_metrics = json.load(file)
-        except FileNotFoundError:
-            backup_metrics = None
+            with open(str(settings.BASE_DIR) + '/data/track-backup-state.json', 'r') as file:
+                track_backup_metrics = json.load(file)
+        except:
+            track_backup_metrics = None
+        try:
+            with open(str(settings.BASE_DIR) + '/data/answer-backup-state.json.json', 'w') as file:
+                answer_backup_metrics = json.load(file)
+        except:
+            answer_backup_metrics = None
             
-        if backup_metrics is not None:
-            now = int(time())
-            backup_diff = now - backup_metrics["timestamp"]
-            metrics.append(f'backup_track_count {backup_metrics["backup_track_count"]}')
-            metrics.append(f'backup_last_reported_seconds_ago {backup_diff}')
+        if track_backup_metrics is not None:
+            metrics.append(f'backup_total_track_count {track_backup_metrics["total_count"]}')
+            metrics.append(f'backup_valid_track_count {track_backup_metrics["valid_count"]}')
+        if answer_backup_metrics is not None:
+            metrics.append(f'backup_total_answer_count {answer_backup_metrics["total_count"]}')
+            metrics.append(f'backup_valid_answer_count {answer_backup_metrics["valid_count"]}')
 
         content = '\n'.join(metrics) + '\n'
         
