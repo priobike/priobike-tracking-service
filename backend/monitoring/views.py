@@ -47,11 +47,11 @@ class ReportTrackBackupMetricsResource(View):
         backup_total_track_count = body_json.get("backup_total_track_count", None)
         backup_valid_track_count = body_json.get("backup_valid_track_count", None)
         
-        if not backup_total_track_count:
-            print("backup_track_count is missing.")
+        if backup_total_track_count is None:
+            print("backup_total_track_count is missing.")
             return HttpResponseBadRequest()
         
-        if not backup_valid_track_count:
+        if backup_valid_track_count is None:
             print("backup_valid_track_count is missing.")
             return HttpResponseBadRequest()
         
@@ -84,11 +84,11 @@ class ReportAnswerBackupMetricsResource(View):
         backup_total_answer_count = body_json.get("backup_total_answer_count", None)
         backup_valid_answer_count = body_json.get("backup_valid_answer_count", None)
         
-        if not backup_total_answer_count:
-            print("backup_answer_count is missing.")
+        if backup_total_answer_count is None:
+            print("backup_total_answer_count is missing.")
             return HttpResponseBadRequest()
         
-        if not backup_valid_answer_count:
+        if backup_valid_answer_count is None:
             print("backup_valid_answer_count is missing.")
             return HttpResponseBadRequest()
         
