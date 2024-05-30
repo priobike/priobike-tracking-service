@@ -44,23 +44,36 @@ class ReportTrackBackupMetricsResource(View):
         # Get metrics from request body.
         body = request.body
         body_json = json.loads(body)
-        backup_total_track_count = body_json.get("backup_total_track_count", None)
-        backup_valid_track_count = body_json.get("backup_valid_track_count", None)
+        backup_total_track_count_old = body_json.get("backup_total_track_count_old", None)
+        backup_valid_track_count_old = body_json.get("backup_valid_track_count_old", None)
+        backup_total_track_count_new = body_json.get("backup_total_track_count_new", None)
+        backup_valid_track_count_new = body_json.get("backup_valid_track_count_new", None)
         
-        if backup_total_track_count is None:
-            print("backup_total_track_count is missing.")
+        
+        if backup_total_track_count_old is None:
+            print("backup_total_track_count_old is missing.")
             return HttpResponseBadRequest()
         
-        if backup_valid_track_count is None:
-            print("backup_valid_track_count is missing.")
+        if backup_valid_track_count_old is None:
+            print("backup_valid_track_count_old is missing.")
+            return HttpResponseBadRequest()
+        
+        if backup_total_track_count_new is None:
+            print("backup_total_track_count_new is missing.")
+            return HttpResponseBadRequest()
+        
+        if backup_valid_track_count_new is None:
+            print("backup_valid_track_count_new is missing.")
             return HttpResponseBadRequest()
         
         now = int(time())
         
         with open(DATA_DIR + 'track-backup-state.json', 'w') as file:
             json.dump({
-                "total_count": backup_total_track_count,
-                "valid_count": backup_valid_track_count,
+                "total_count_old": backup_total_track_count_old,
+                "valid_count_old": backup_valid_track_count_old,
+                "total_count_new": backup_total_track_count_new,
+                "valid_count_new": backup_valid_track_count_new,
                 "timestamp": now
             }, file)
             
@@ -81,23 +94,35 @@ class ReportAnswerBackupMetricsResource(View):
         # Get metrics from request body.
         body = request.body
         body_json = json.loads(body)
-        backup_total_answer_count = body_json.get("backup_total_answer_count", None)
-        backup_valid_answer_count = body_json.get("backup_valid_answer_count", None)
+        backup_total_answer_count_old = body_json.get("backup_total_answer_count_old", None)
+        backup_valid_answer_count_old = body_json.get("backup_valid_answer_count_old", None)
+        backup_total_answer_count_new = body_json.get("backup_total_answer_count_new", None)
+        backup_valid_answer_count_new = body_json.get("backup_valid_answer_count_new", None)
         
-        if backup_total_answer_count is None:
-            print("backup_total_answer_count is missing.")
+        if backup_total_answer_count_old is None:
+            print("backup_total_answer_count_old is missing.")
             return HttpResponseBadRequest()
         
-        if backup_valid_answer_count is None:
-            print("backup_valid_answer_count is missing.")
+        if backup_valid_answer_count_old is None:
+            print("backup_valid_answer_count_old is missing.")
+            return HttpResponseBadRequest()
+        
+        if backup_total_answer_count_new is None:
+            print("backup_total_answer_count_new is missing.")
+            return HttpResponseBadRequest()
+        
+        if backup_valid_answer_count_new is None:
+            print("backup_valid_answer_count_new is missing.")
             return HttpResponseBadRequest()
         
         now = int(time())
         
         with open(DATA_DIR + 'answer-backup-state.json', 'w') as file:
             json.dump({
-                "total_count": backup_total_answer_count,
-                "valid_count": backup_valid_answer_count,
+                "total_count_old": backup_total_answer_count_old,
+                "valid_count_old": backup_valid_answer_count_old,
+                "total_count_new": backup_total_answer_count_new,
+                "valid_count_new": backup_valid_answer_count_new,
                 "timestamp": now
             }, file)
             

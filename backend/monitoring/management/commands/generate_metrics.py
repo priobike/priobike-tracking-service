@@ -234,11 +234,15 @@ class Command(BaseCommand):
             answer_backup_metrics = None
             
         if track_backup_metrics is not None:
-            metrics.append(f'backup_total_track_count {track_backup_metrics["total_count"]}')
-            metrics.append(f'backup_valid_track_count {track_backup_metrics["valid_count"]}')
+            metrics.append(f'n_backup_tracks{{version="old"}}{{valid="true"}} {track_backup_metrics["valid_count_old"]}')
+            metrics.append(f'n_backup_tracks{{version="old"}}{{valid="false"}} {track_backup_metrics["total_count_old"] - track_backup_metrics["valid_count_old"]}')
+            metrics.append(f'n_backup_tracks{{version="new"}}{{valid="true"}} {track_backup_metrics["valid_count_new"]}')
+            metrics.append(f'n_backup_tracks{{version="new"}}{{valid="false"}} {track_backup_metrics["total_count_new"] - track_backup_metrics["valid_count_new"]}')
         if answer_backup_metrics is not None:
-            metrics.append(f'backup_total_answer_count {answer_backup_metrics["total_count"]}')
-            metrics.append(f'backup_valid_answer_count {answer_backup_metrics["valid_count"]}')
+            metrics.append(f'n_backup_answers{{version="old"}}{{valid="true"}} {answer_backup_metrics["valid_count_old"]}')
+            metrics.append(f'n_backup_answers{{version="old"}}{{valid="false"}} {answer_backup_metrics["total_count_old"] - answer_backup_metrics["valid_count_old"]}')
+            metrics.append(f'n_backup_answers{{version="new"}}{{valid="true"}} {answer_backup_metrics["valid_count_new"]}')
+            metrics.append(f'n_backup_answers{{version="new"}}{{valid="false"}} {answer_backup_metrics["total_count_new"] - answer_backup_metrics["valid_count_new"]}')
 
         content = '\n'.join(metrics) + '\n'
         
