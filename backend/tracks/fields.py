@@ -15,6 +15,9 @@ class JSONField(models.TextField):
         # If the value is a single-quote string, replace it with a double-quote string.
         if isinstance(value, str) and "'" in value:
             value = value.replace("'", '"')
+        # When the string contains symbols like Ã\\x9f (ß), we need to use the correct encoding.
+        if isinstance(value, str) and "\\x" in value:
+            value = bytes(value, "utf-8").decode("unicode_escape")
         # Convert uppercase True and False to lowercase, and None to null.
         if isinstance(value, str):
             value = value.replace("True", "true").replace("False", "false")
