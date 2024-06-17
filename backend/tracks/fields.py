@@ -28,6 +28,7 @@ class JSONField(models.TextField):
         except (TypeError, ValueError) as e:
             # Print out a detailed error message.
             print(f"Error: {e}")
+            print(value)
             raise
 
     def from_db_value(self, value, *args):
