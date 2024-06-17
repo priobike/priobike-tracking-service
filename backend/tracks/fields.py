@@ -11,6 +11,7 @@ class JSONField(models.TextField):
     def to_python(self, value):
         if not value: 
             return None
+        print(value)
         # ---- Checks if the Django encoder was used to serialize the data.
         # If the value is a single-quote string, replace it with a double-quote string.
         if isinstance(value, str) and "'" in value:
