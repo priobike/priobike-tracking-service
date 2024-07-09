@@ -11,11 +11,17 @@ The easiest way to run the tracking service is to use the contained `docker-comp
 docker-compose up
 ```
 
-## API and CLI
+## Important to know
 
-To balance load we run this service in two instances:
+This service can run in two modes: manager and worker. The worker mode is designed to face user traffic and can be scaled horizontally.
+
+These are the exact tasks of each role:
 - The **worker** receives and checks tracks (can be scaled). Data stored in the worker DB can be lost at any time.
 - The **manager** fetches tracks from the worker, tells them to flush their DB once new tracks are finished, and exposes a download API for all tracks. This service should be persisted.
+
+See `docker-compose.yml` for an example setup.
+
+## API and CLI
 
 ### Tracks - REST Endpoint
 
