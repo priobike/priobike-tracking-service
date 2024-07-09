@@ -1,16 +1,25 @@
-# Tracking Service
+# priobike-tracking-service
 
 A microservice to receive tracks and feedback from users.
 
-## Read this first
+[Learn more about PrioBike](https://github.com/priobike)
+
+## Quickstart
+
+The easiest way to run the tracking service is to use the contained `docker-compose`:
+```
+docker-compose up
+```
+
+## API and CLI
 
 To balance load we run this service in two instances:
 - The **worker** receives and checks tracks (can be scaled). Data stored in the worker DB can be lost at any time.
 - The **manager** fetches tracks from the worker, tells them to flush their DB once new tracks are finished, and exposes a download API for all tracks. This service should be persisted.
 
-## Tracks - REST Endpoint
+### Tracks - REST Endpoint
 
-### MANAGER *GET* `/tracks/fetch/` - Get a single track with an API key.
+#### MANAGER *GET* `/tracks/fetch/` - Get a single track with an API key.
 
 #### Response format
 
@@ -33,7 +42,7 @@ Parameters:
 * `key` - The API key to use.
 * `pk` - The primary key of the track to get.
 
-### MANAGER *GET* `/tracks/list/` - Get tracks with an API key.
+#### MANAGER *GET* `/tracks/list/` - Get tracks with an API key.
 
 #### Response format
 
@@ -84,7 +93,7 @@ Parameters:
 * `page` - The page to get. Default: `1`.
 * `pageSize` - The page size to get. Default: `10`. Limited to `100`.
 
-### WORKER *POST* `/tracks/post/` - Post a new track.
+#### WORKER *POST* `/tracks/post/` - Post a new track.
 
 #### Response format
 
@@ -110,9 +119,9 @@ Response:
 
 If anything else happens, the server will respond with a response code other than 200.
 
-## Feedback REST Endpoint
+#### Feedback REST Endpoint
 
-### WORKER *POST* `/answers/post/` - Post a new answer.
+#### WORKER *POST* `/answers/post/` - Post a new answer.
 
 #### Request format
 
@@ -171,3 +180,13 @@ curl "http://localhost:8000/monitoring/metrics?api_key=secret"
 #### Note
 The metric only contains tracks, that did not charge the battery during tracks. 
 The ```Track``` attribute ```has_battery_data``` is also false for tracks that did charge during the track.
+
+## Contributing
+
+We highly encourage you to open an issue or a pull request. You can also use our repository freely with the `MIT` license.
+
+Every service runs through testing before it is deployed in our release setup. Read more in our [PrioBike deployment readme](https://github.com/priobike/.github/blob/main/wiki/deployment.md) to understand how specific branches/tags are deployed.
+
+## Anything unclear?
+
+Help us improve this documentation. If you have any problems or unclarities, feel free to open an issue.
