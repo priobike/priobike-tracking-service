@@ -11,6 +11,18 @@ The easiest way to run the tracking service is to use the contained `docker-comp
 docker-compose up
 ```
 
+Via the following build arguments, the build can be configured:
+
+- `WORKER_MODE`: If in worker mode or manager mode.
+
+### Manager
+- `WORKER_HOST`: The host of the worker.
+- `SYNC_KEY`: The key used when syncing.
+
+### Worker
+- `MANAGER_HOST`: The host of the manager.
+- `SYNC_KEY`: The key used when syncing.
+
 ## Important to know
 
 This service can run in two modes: manager and worker. The worker mode is designed to face user traffic and can be scaled horizontally.
